@@ -566,3 +566,23 @@
     max-width: 52rem;
   }
 }
+
+/* 2K to 4K screens: the whole page scales up, spacing included, so it fills the screen at the
+   same proportions as on a 1920px one. */
+@media (min-width: 2200px) {
+  .landing {
+    zoom: 1.25;
+  }
+}
+
+@media (min-width: 2700px) {
+  .landing {
+    zoom: 1.5;
+  }
+}
+
+@media (min-width: 3400px) {
+  .landing {
+    zoom: 1.875;
+  }
+}
