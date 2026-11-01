@@ -799,7 +799,7 @@ export const es: Messages = {
   'landing.offerBadge': 'Oferta de lanzamiento: {days} días de Pro gratis hasta el {date}',
   'landing.title': 'Mira cuánto te cuestan tus errores de trading',
   'landing.lead': 'Tiltless es un diario de trading que encuentra solo tus operaciones por revancha, los stops movidos y las malas horas, y te dice cuánto te costó cada hábito en dólares. Así sabes qué corregir primero.',
-  'landing.signIn': 'Iniciar sesión',
+  'landing.signIn': 'Abrir la app',
   'landing.howLink': 'Cómo funciona',
   'landing.reassure': 'El diario es gratis para siempre · sin tarjeta · sin claves API del exchange · funciona en el navegador',
   'landing.demo': 'demo',

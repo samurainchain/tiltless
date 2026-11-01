@@ -175,7 +175,7 @@ export function PartnersPage() {
         </p>
         <p className="caption">{t('partners.exampleNote')}</p>
         <p className="caption">
-          <a href="./terms/#partners">{t('partners.rules')}</a>
+          <a href="/terms/#partners">{t('partners.rules')}</a>
         </p>
       </Card>
     </>

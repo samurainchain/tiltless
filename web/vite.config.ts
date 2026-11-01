@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
@@ -81,6 +82,12 @@ export default defineConfig({
   plugins: [react(), tesseractAssets(), serviceWorker()],
   // Relative asset paths so the build works from the GitHub Pages project subpath.
   base: './',
+  // Two pages: the landing page at the site's root and the journal at /app/ (SPEC section 4.0).
+  build: {
+    rollupOptions: {
+      input: { landing: fileURLToPath(new URL('./index.html', import.meta.url)), app: fileURLToPath(new URL('./app/index.html', import.meta.url)) },
+    },
+  },
   test: {
     environment: 'node',
   },

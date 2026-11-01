@@ -8,7 +8,7 @@ function loadLogo(): Promise<HTMLImageElement | undefined> {
     const image = new Image()
     image.onload = () => resolve(image)
     image.onerror = () => resolve(undefined)
-    image.src = './favicon.svg'
+    image.src = '/favicon.svg'
   })
 }
 

@@ -1,40 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { useEffect } from 'react'
-import { isFresh, keepReferral, referralCodeFrom, withoutReferral, type StoredReferral } from '../core/referral'
+import { isFresh } from '../core/referral'
+import { readStored, writeStored } from './referralLink'
 import { useCloud } from './cloud'
 
 // The browser side of the partner program (SPEC section 8): remember the partner link a
 // visitor arrived with, hand it to the database once they sign in, and the partner's own
 // calls. Storage keys keep the app's first name, like the rest.
 
-const STORAGE_KEY = 'mirror.referral'
-
-function readStored(): StoredReferral | undefined {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const parsed = raw ? (JSON.parse(raw) as Partial<StoredReferral>) : undefined
-    return parsed && typeof parsed.code === 'string' && typeof parsed.at === 'number' ? { code: parsed.code, at: parsed.at } : undefined
-  } catch {
-    return undefined
-  }
-}
-
-function writeStored(value: StoredReferral | undefined): void {
-  try {
-    if (value) localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
-    else localStorage.removeItem(STORAGE_KEY)
-  } catch {
-    // Without storage the link counts only if the visitor signs up in this visit.
-  }
-}
-
-/** Runs once at startup: keeps a `?ref=` code (the first one wins for 60 days) and cleans the address. */
-export function captureReferral(): void {
-  const code = referralCodeFrom(window.location.href)
-  if (!code) return
-  writeStored(keepReferral(readStored(), code, Date.now()))
-  window.history.replaceState(window.history.state, '', withoutReferral(window.location.href))
-}
+export { captureReferral } from './referralLink'
 
 /**
  * After sign-in, ties the account to the partner whose link the visitor opened. The database

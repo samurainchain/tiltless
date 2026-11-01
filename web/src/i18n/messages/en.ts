@@ -800,7 +800,7 @@ export const en = {
   'landing.offerBadge': 'Launch offer: {days} days of Pro free until {date}',
   'landing.title': 'See what your trading mistakes cost you',
   'landing.lead': 'Tiltless is a trading journal that finds your revenge trades, moved stops and bad hours on its own, and shows what each habit cost you in dollars. So you know what to fix first.',
-  'landing.signIn': 'Sign in',
+  'landing.signIn': 'Open the app',
   'landing.howLink': 'How it works',
   'landing.reassure': 'The journal is free forever · no card · no exchange API keys · works in your browser',
   'landing.demo': 'demo',

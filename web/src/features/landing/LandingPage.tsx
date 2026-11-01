@@ -69,8 +69,8 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
   return (
     <div className="landing">
       <header className="landing__bar">
-        <a className="landing__brand" href="./" aria-label="Tiltless">
-          <img src="./favicon.svg" alt="" width={28} height={28} />
+        <a className="landing__brand" href="/" aria-label="Tiltless">
+          <img src="/favicon.svg" alt="" width={28} height={28} />
           <span>Tiltless</span>
         </a>
         <nav className="landing__nav" aria-label={t('landing.navLabel')}>

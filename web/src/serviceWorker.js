@@ -6,7 +6,8 @@
 // with Supabase always goes to the network.
 
 const CACHE = `mirror-${self.BUILD_ID}`
-const SHELL = ['./', ...self.PRECACHE]
+// The front page and the journal's page, at the site's root and /app/.
+const SHELL = ['./', './app/', ...self.PRECACHE]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()))
@@ -52,6 +53,6 @@ self.addEventListener('fetch', (event) => {
         if (response.ok) void caches.open(CACHE).then((cache) => cache.put(request, response.clone()))
         return response
       })
-      .catch(async () => (await match(request)) ?? (request.mode === 'navigate' ? match(new Request('./')) : Response.error())),
+      .catch(async () => (await match(request)) ?? (request.mode === 'navigate' ? match(new Request(url.pathname.startsWith('/app') ? './app/' : './')) : Response.error())),
   )
 })

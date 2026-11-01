@@ -112,7 +112,7 @@ export function OnboardingFlow() {
         {step === 'welcome' && (
           <section className="onboarding__welcome">
             <LanguagePicker />
-            <img src="./favicon.svg" alt="" width={64} height={64} />
+            <img src="/favicon.svg" alt="" width={64} height={64} />
             <h1>{t('onboarding.welcome.title')}</h1>
             <p className="secondary-text">{t('onboarding.welcome.text')}</p>
           </section>

@@ -7,11 +7,12 @@ import { mergeReadings, parseScreenshotText, type ParsedScreenshot } from '../..
 export type RecognizeProgress = (fraction: number) => void
 
 /**
- * Where the engine files are served from (see `tesseractAssets` in vite.config.ts). Absolute,
- * because the worker resolves relative paths against its own script URL, not the page.
+ * Where the engine files are served from (see `tesseractAssets` in vite.config.ts): the site's
+ * /tesseract/, whichever page asks. Absolute, because the worker resolves relative paths
+ * against its own script URL, not the page.
  */
 function assetUrl(path: string): string {
-  return new URL(`tesseract/${path}`, document.baseURI).href
+  return new URL(`/tesseract/${path}`, window.location.origin).href
 }
 
 interface Prepared {
