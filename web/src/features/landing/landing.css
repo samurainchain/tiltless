@@ -17,6 +17,10 @@
   padding: var(--space-s) 0;
   background: color-mix(in srgb, var(--color-background) 88%, transparent);
   backdrop-filter: blur(12px);
+  /* The bar's background runs the full width of the screen while its items stay on the page's
+     column: a wide shadow in the same color, clipped to the bar's height. */
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--color-background) 88%, transparent);
+  clip-path: inset(0 -100vmax);
 }
 
 .landing__brand {
