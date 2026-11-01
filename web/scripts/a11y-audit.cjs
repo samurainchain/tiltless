@@ -76,12 +76,16 @@ async function main() {
     const page = await context.newPage()
     page.on('dialog', (dialog) => dialog.dismiss())
     await page.goto(URL)
-    await page.locator('.onboarding h1').waitFor()
+    await page.locator('.landing h1').waitFor()
     const report = async (where) => {
       const problems = await page.evaluate(inspectPage)
       for (const problem of problems) failures.push(`[${scheme}] ${where}: ${problem}`)
     }
 
+    // A new visitor at the bare address sees the landing page; its button leads to onboarding.
+    await report('landing')
+    await page.locator('.landing .button--primary').first().click()
+    await page.locator('.onboarding h1').waitFor()
     await report('onboarding')
     await page.locator('.onboarding input[type=file]').setInputFiles(BACKUP)
     await page.getByRole('heading', { name: 'Today', exact: true }).waitFor()
@@ -188,7 +192,7 @@ async function main() {
   for (const locale of ['ru-RU', 'es-ES']) {
     const context = await browser.newContext({ viewport: { width: 360, height: 780 }, locale })
     const page = await context.newPage()
-    await page.goto(URL)
+    await page.goto(`${URL}#/today`)
     await page.locator('.onboarding input[type=file]').setInputFiles(BACKUP)
     await page.locator('.tabbar .nav-add').waitFor()
     await page.goto(`${URL}#/trades`)

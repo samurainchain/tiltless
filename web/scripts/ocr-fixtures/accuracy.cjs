@@ -18,7 +18,8 @@ async function main() {
   const expected = JSON.parse(readFileSync(join(DIR, 'expected.json'), 'utf8'))
   const browser = await chromium.launch()
   const page = await (await browser.newContext({ viewport: { width: 430, height: 900 }, locale: 'en-US' })).newPage()
-  await page.goto(URL)
+  // Straight into the app (#/today): the bare address shows the landing page first.
+  await page.goto(`${URL}#/today`)
 
   // Skip onboarding, then one crypto perpetuals account to log against.
   await page.getByRole('button', { name: 'Skip' }).click()

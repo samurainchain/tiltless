@@ -1,5 +1,5 @@
 import { ChartColumn, CircleUser, ListChecks, Plus, Sun, type LucideIcon } from 'lucide-react'
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useJournal } from '../../app/journal'
 import { useLimitAlerts } from '../../app/limitAlerts'
 import { useReferralClaim } from '../../app/referral'
@@ -27,6 +27,28 @@ const AnalyticsPage = lazy(() => import('../analytics/AnalyticsPage').then((modu
 const ProPage = lazy(() => import('../billing/ProPage').then((module) => ({ default: module.ProPage })))
 const PartnersPage = lazy(() => import('../partners/PartnersPage').then((module) => ({ default: module.PartnersPage })))
 const WeeklyReviewPage = lazy(() => import('../review/WeeklyReviewPage').then((module) => ({ default: module.WeeklyReviewPage })))
+const LandingPage = lazy(() => import('../landing/LandingPage').then((module) => ({ default: module.LandingPage })))
+
+const STARTED_KEY = 'tiltless.started'
+
+/**
+ * A new visitor who opens the bare address (from a bio, an ad or a partner's link) sees the
+ * landing page before onboarding. A link into the app (#/…), a sign-in link (?code=…) or a
+ * visitor who already pressed "Start" in this tab goes straight on. Read when the app loads,
+ * before the sign-in code is taken off the address.
+ */
+function landingWanted(): boolean {
+  try {
+    if (sessionStorage.getItem(STARTED_KEY)) return false
+  } catch {
+    // Storage blocked: show the landing page; "Start" still works for this visit.
+  }
+  const url = new URL(window.location.href)
+  const hash = url.hash.replace(/^#\/?/, '')
+  return hash === '' && !['code', 'error', 'error_description'].some((name) => url.searchParams.has(name))
+}
+
+const LANDING_ON_ARRIVAL = landingWanted()
 
 interface Tab {
   route: Route['name']
@@ -56,6 +78,7 @@ export function AppShell() {
   useLimitAlerts()
   useReferralClaim()
   const needsOnboarding = useNeedsOnboarding()
+  const [landing, setLanding] = useState(LANDING_ON_ARRIVAL)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -63,10 +86,28 @@ export function AppShell() {
 
   // Name the page after the screen, so screen readers announce where navigation went.
   useEffect(() => {
+    // The landing page names itself.
+    if (document.querySelector('.landing')) return
     const heading = document.querySelector('.content h1')?.textContent
     document.title = heading ? `${heading} — Tiltless` : 'Tiltless'
   })
 
+  if (needsOnboarding && landing) {
+    const start = () => {
+      try {
+        sessionStorage.setItem(STARTED_KEY, '1')
+      } catch {
+        // Not remembered: a reload shows the landing page again.
+      }
+      setLanding(false)
+      window.scrollTo(0, 0)
+    }
+    return (
+      <Suspense fallback={null}>
+        <LandingPage onStart={start} />
+      </Suspense>
+    )
+  }
   if (needsOnboarding) return <OnboardingFlow />
 
   const tabLink = (tab: Tab) => {
