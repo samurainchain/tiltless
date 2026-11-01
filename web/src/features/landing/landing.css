@@ -62,7 +62,17 @@
 }
 
 .landing__signin {
+  display: none;
   margin-left: auto;
+  white-space: nowrap;
+}
+
+/* On narrow phones the header keeps the brand and the languages; "Start free" below opens the
+   journal just the same, for new and returning visitors. */
+@media (min-width: 480px) {
+  .landing__signin {
+    display: block;
+  }
 }
 
 .landing__nav + .landing__signin {
@@ -121,8 +131,15 @@
 }
 
 .landing__hero-visual {
-  position: relative;
+  /* The two floating notes sit in the flow and tuck only into the mock's padding, so they never
+     cover its rows, whatever the width or language. */
+  display: flex;
+  flex-direction: column;
   padding: var(--space-l) 0;
+}
+
+.landing__hero-visual > * {
+  position: relative;
 }
 
 .landing__mock {
@@ -177,11 +194,24 @@
 }
 
 .landing__float {
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-xxs);
+  max-width: min(100%, 22rem);
   padding: var(--space-s) var(--space-m);
-  margin-top: var(--space-s);
+  box-shadow: 0 24px 60px -20px var(--color-scrim);
+}
+
+.landing__float--flag {
+  order: -1;
+  align-self: flex-end;
+  margin-bottom: calc(var(--space-s) * -1);
+}
+
+.landing__float--without {
+  align-self: flex-start;
+  margin-top: calc(var(--space-s) * -1);
 }
 
 .landing__float-big {
@@ -437,47 +467,102 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .landing__grid--3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .landing__grid--bento {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .landing__feature--wide {
     grid-column: span 2;
   }
+
 }
 
-@media (min-width: 960px) {
+@media (min-width: 1024px) {
+  .landing__grid--3,
+  .landing__grid--bento {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .landing__hero {
-    grid-template-columns: 1.1fr 1fr;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     align-items: center;
     padding: calc(var(--space-xl) * 2) 0;
   }
 
   .landing__hero-visual {
-    padding: calc(var(--space-xl) * 2 + var(--space-xs)) var(--space-xl) calc(var(--space-xl) * 3) 0;
-  }
-
-  .landing__float {
-    position: absolute;
-    margin: 0;
-    box-shadow: 0 24px 60px -20px var(--color-scrim);
+    padding: 0;
   }
 
   .landing__float--flag {
-    top: 0;
-    right: 0;
+    margin-right: calc(var(--space-s) * -1);
   }
 
   .landing__float--without {
-    bottom: 0;
-    left: -24px;
+    margin-left: calc(var(--space-l) * -1);
   }
 
   .landing__section h2 {
     font-size: 2rem;
+  }
+}
+
+/* Big screens: a wider column and larger type, so the page doesn't sit small in the middle. */
+@media (min-width: 1280px) {
+  .landing__float--flag {
+    margin-right: calc(var(--space-l) * -1);
+  }
+}
+
+@media (min-width: 1440px) {
+  .landing {
+    max-width: 1280px;
+  }
+
+  .landing__hero h1 {
+    font-size: 3.75rem;
+  }
+
+  .landing__lead {
+    font-size: 1.125rem;
+    max-width: 38rem;
+  }
+
+  .landing__section {
+    padding: calc(var(--space-xl) * 1.5) 0;
+  }
+
+  .landing__section h2 {
+    font-size: 2.5rem;
+    max-width: 44rem;
+  }
+
+  .landing__feature h3,
+  .landing__steps h3,
+  .landing__plan h3 {
+    font-size: var(--text-title);
+  }
+
+  .landing .secondary-text {
+    font-size: var(--text-headline);
+  }
+}
+
+@media (min-width: 1800px) {
+  .landing {
+    max-width: 1440px;
+  }
+
+  .landing__hero h1 {
+    font-size: 4.5rem;
+  }
+
+  .landing__lead {
+    font-size: 1.25rem;
+    max-width: 42rem;
+  }
+
+  .landing__section h2 {
+    font-size: 3rem;
+    max-width: 52rem;
   }
 }
