@@ -1,5 +1,5 @@
 import Big from 'big.js'
-import { ImagePlus, ImageUp, Plus, Wallet, X } from 'lucide-react'
+import { ImagePlus, ImageUp, Plus, Split, Wallet, X } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { activeAccounts, useJournal, useMistakeName, useSelectedAccount, useStore } from '../../app/journal'
 import { useSheets, type TradePrefill } from '../../app/sheets'
@@ -15,6 +15,7 @@ import type { MessageKey } from '../../i18n/messages/en'
 import { compressImage, type CompressedImage } from '../images/compress'
 import { StoredImage } from '../images/TradeImages'
 import { EMOTION_ICONS } from '../trades/TradeRow'
+import { ExitsEditor } from './ExitsEditor'
 import { recognizeScreenshot } from './recognize'
 import {
   applyScreenshot,
@@ -25,6 +26,7 @@ import {
   newEntryForm,
   previewResult,
   selectContract,
+  splitExit,
   type EntryErrors,
   type EntryForm,
   type RecognizedFields,
@@ -331,10 +333,19 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
           <Field label={t('entry.entryPrice')} htmlFor={ids.entry} error={error('entryPrice')} recognized={recognized.entryPrice}>
             <DecimalInput id={ids.entry} value={form.entryPrice} onChange={(entryPrice) => edit('entryPrice', { entryPrice })} />
           </Field>
-          <Field label={t('entry.exitPrice')} htmlFor={ids.exit} error={error('exitPrice')} recognized={recognized.exitPrice}>
-            <DecimalInput id={ids.exit} value={form.exitPrice} onChange={(exitPrice) => edit('exitPrice', { exitPrice })} />
-          </Field>
+          {form.exits.length === 0 && (
+            <Field label={t('entry.exitPrice')} htmlFor={ids.exit} error={error('exitPrice')} recognized={recognized.exitPrice}>
+              <DecimalInput id={ids.exit} value={form.exitPrice} onChange={(exitPrice) => edit('exitPrice', { exitPrice })} />
+            </Field>
+          )}
         </div>
+        {form.exits.length === 0 ? (
+          <Button variant="plain" className="split-exit" icon={<Split size={18} aria-hidden="true" />} onClick={() => update(splitExit(form))}>
+            {t('entry.splitExit')}
+          </Button>
+        ) : (
+          <ExitsEditor form={form} error={error('exits')} onChange={(next) => update({ exits: next.exits, exitPrice: next.exitPrice, closedAt: next.closedAt })} />
+        )}
 
         <Field label={t(sizeLabel(market, form.sizeUnit))} htmlFor={ids.size} error={error('size')} recognized={recognized.size}>
           <div className="input-with-addon">
@@ -456,9 +467,11 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
               <Field label={t('entry.openedAt')} htmlFor={ids.opened} recognized={recognized.openedAt}>
                 <input id={ids.opened} className="input" type="datetime-local" value={form.openedAt} onChange={(event) => edit('openedAt', { openedAt: event.target.value })} />
               </Field>
-              <Field label={t('entry.closedAt')} htmlFor={ids.closed} error={error('closedAt')} recognized={recognized.closedAt}>
-                <input id={ids.closed} className="input" type="datetime-local" value={form.closedAt} onChange={(event) => edit('closedAt', { closedAt: event.target.value })} />
-              </Field>
+              {form.exits.length === 0 && (
+                <Field label={t('entry.closedAt')} htmlFor={ids.closed} error={error('closedAt')} recognized={recognized.closedAt}>
+                  <input id={ids.closed} className="input" type="datetime-local" value={form.closedAt} onChange={(event) => edit('closedAt', { closedAt: event.target.value })} />
+                </Field>
+              )}
             </div>
             <Field label={t('entry.note')} htmlFor={ids.note}>
               <textarea id={ids.note} className="input" value={form.note} onChange={(event) => update({ note: event.target.value })} />

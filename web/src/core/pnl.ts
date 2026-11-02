@@ -1,6 +1,6 @@
 import Big from 'big.js'
 import { toBig } from './decimal'
-import type { DecimalString, Side, Trade } from './models'
+import type { DecimalString, Side, Trade, TradeExit } from './models'
 
 // Per-trade math from SPEC section 6. Pure functions: no UI, no storage.
 
@@ -80,6 +80,39 @@ export function percentOfDeposit(pnl: Big, deposit: DecimalString | undefined): 
 /** Sum of PnL over the closed trades in the list. */
 export function totalPnl(trades: readonly PnlInput[]): Big {
   return trades.reduce((sum, trade) => sum.plus(tradePnl(trade) ?? 0), new Big(0))
+}
+
+/**
+ * Average exit of a position closed in parts, weighted by each part's share: Σ price × share.
+ * Undefined unless the shares add up to exactly 100%.
+ */
+export function averageExit(exits: readonly Pick<TradeExit, 'price' | 'percent'>[]): DecimalString | undefined {
+  if (exits.length === 0) return undefined
+  const total = exits.reduce((sum, exit) => sum.plus(exit.percent), new Big(0))
+  if (!total.eq(100)) return undefined
+  return exits.reduce((sum, exit) => sum.plus(new Big(exit.price).times(exit.percent).div(100)), new Big(0)).toString()
+}
+
+export interface ExitPart {
+  exit: TradeExit
+  /** The part's PnL before fees: (exit − entry) × Q × share × M × d. */
+  pnl: Big
+}
+
+/** Each part of a position closed in parts, oldest first; empty for a single exit. */
+export function exitParts(trade: Pick<Trade, 'side' | 'entryPrice' | 'quantity' | 'contractMultiplier' | 'exits'>): ExitPart[] {
+  return [...(trade.exits ?? [])]
+    .sort((a, b) => Date.parse(a.closedAt) - Date.parse(b.closedAt))
+    .map((exit) => ({
+      exit,
+      pnl: new Big(exit.price)
+        .minus(trade.entryPrice)
+        .times(trade.quantity)
+        .times(exit.percent)
+        .div(100)
+        .times(trade.contractMultiplier)
+        .times(direction(trade.side)),
+    }))
 }
 
 /** Converts a position size entered in quote currency (e.g. USDT) into base units. */

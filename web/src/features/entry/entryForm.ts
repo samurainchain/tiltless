@@ -1,8 +1,8 @@
 import Big from 'big.js'
 import { parseDecimalInput, parsePositive } from '../../core/decimal'
-import { newId, type Account, type AssetClass, type Emotion, type Side, type Trade, type TradeSource } from '../../core/models'
+import { newId, type Account, type AssetClass, type Emotion, type Side, type Trade, type TradeExit, type TradeSource } from '../../core/models'
 import type { Confidence, ParsedScreenshot } from '../../core/ocr/parseScreenshot'
-import { quoteToBaseQuantity, rMultiple, tradePnl } from '../../core/pnl'
+import { averageExit, quoteToBaseQuantity, rMultiple, tradePnl } from '../../core/pnl'
 import { FUTURES_PRESETS } from '../../core/presets'
 import type { MessageKey } from '../../i18n/messages/en'
 
@@ -19,6 +19,8 @@ export interface EntryForm {
   multiplier: string
   entryPrice: string
   exitPrice: string
+  /** A position closed in parts: two or more rows; empty for a single exit at `exitPrice`. */
+  exits: ExitRow[]
   size: string
   /** Crypto only: size typed in coins (`base`) or in USDT (`quote`). */
   sizeUnit: 'base' | 'quote'
@@ -36,7 +38,14 @@ export interface EntryForm {
   source: TradeSource
 }
 
-export type EntryField = 'symbol' | 'multiplier' | 'entryPrice' | 'exitPrice' | 'size' | 'stopLoss' | 'fees' | 'closedAt'
+/** One partial exit as typed: price, share of the position in %, and a `datetime-local` time. */
+export interface ExitRow {
+  price: string
+  percent: string
+  closedAt: string
+}
+
+export type EntryField = 'symbol' | 'multiplier' | 'entryPrice' | 'exitPrice' | 'exits' | 'size' | 'stopLoss' | 'fees' | 'closedAt'
 export type EntryErrors = Partial<Record<EntryField, MessageKey>>
 
 export const CUSTOM_CONTRACT = 'custom'
@@ -72,6 +81,7 @@ export function newEntryForm(account: Account | undefined, trades: readonly Trad
     multiplier: firstPreset.multiplier,
     entryPrice: '',
     exitPrice: '',
+    exits: [],
     size: '',
     sizeUnit: 'base',
     stopLoss: '',
@@ -98,6 +108,7 @@ export function editEntryForm(trade: Trade): EntryForm {
     multiplier: trade.contractMultiplier,
     entryPrice: trade.entryPrice,
     exitPrice: trade.exitPrice ?? '',
+    exits: (trade.exits ?? []).map((exit) => ({ price: exit.price, percent: exit.percent, closedAt: toLocalInput(new Date(exit.closedAt)) })),
     size: trade.quantity,
     sizeUnit: 'base',
     stopLoss: trade.stopLoss ?? '',
@@ -120,6 +131,46 @@ export function selectContract(form: EntryForm, contract: string): EntryForm {
   return { ...form, contract, symbol: preset.symbol, multiplier: preset.multiplier }
 }
 
+/** Turns a single exit into two parts: the typed exit for half the position, and an empty half. */
+export function splitExit(form: EntryForm): EntryForm {
+  return {
+    ...form,
+    exits: [
+      { price: form.exitPrice, percent: '50', closedAt: form.closedAt },
+      { price: '', percent: '50', closedAt: form.closedAt },
+    ],
+  }
+}
+
+/** Share of the position the exit rows don't cover yet, never below zero. */
+export function remainingPercent(exits: readonly ExitRow[]): Big {
+  const used = exits.reduce((sum, row) => sum.plus(parseDecimalInput(row.percent) ?? '0'), new Big(0))
+  return used.gte(100) ? new Big(0) : new Big(100).minus(used)
+}
+
+/** Adds an exit row for the rest of the position, at the last row's time. */
+export function addExit(form: EntryForm): EntryForm {
+  const last = form.exits.at(-1)
+  const rest = remainingPercent(form.exits)
+  return { ...form, exits: [...form.exits, { price: '', percent: rest.gt(0) ? rest.toString() : '', closedAt: last?.closedAt ?? form.closedAt }] }
+}
+
+/** Removes an exit row; with one row left the trade goes back to a single exit at its price. */
+export function removeExit(form: EntryForm, index: number): EntryForm {
+  const exits = form.exits.filter((_, position) => position !== index)
+  if (exits.length > 1) return { ...form, exits }
+  const [only] = exits
+  return { ...form, exits: [], exitPrice: only?.price ?? form.exitPrice, closedAt: only?.closedAt ?? form.closedAt }
+}
+
+/** The exit price the trade's math uses: the typed one, or the average of complete exit rows. */
+export function formExitPrice(form: EntryForm): string | undefined {
+  if (form.exits.length === 0) return parsePositive(form.exitPrice)
+  const rows = form.exits.map((row) => ({ price: parsePositive(row.price), percent: parsePositive(row.percent) }))
+  if (rows.some((row) => !row.price || !row.percent)) return undefined
+  return averageExit(rows as { price: string; percent: string }[])
+}
+
 /** Position size in base units, converting from USDT when the user typed a notional. */
 function baseQuantity(form: EntryForm, market: AssetClass, entryPrice: string): string | undefined {
   const size = parsePositive(form.size)
@@ -134,7 +185,7 @@ function multiplierFor(form: EntryForm, market: AssetClass): string | undefined 
 /** Live PnL and R for the header of the sheet, once prices and size are filled. */
 export function previewResult(form: EntryForm, market: AssetClass): { pnl?: Big; r?: Big } {
   const entryPrice = parsePositive(form.entryPrice)
-  const exitPrice = parsePositive(form.exitPrice)
+  const exitPrice = formExitPrice(form)
   if (!entryPrice || !exitPrice) return {}
   const quantity = baseQuantity(form, market, entryPrice)
   const contractMultiplier = multiplierFor(form, market)
@@ -169,8 +220,24 @@ export function buildTrade(
 
   const entryPrice = parsePositive(form.entryPrice)
   if (!entryPrice) errors.entryPrice = 'entry.error.price'
-  const exitPrice = parsePositive(form.exitPrice)
-  if (!exitPrice) errors.exitPrice = 'entry.error.price'
+  let exits: TradeExit[] | undefined
+  let exitPrice: string | undefined
+  let lastExit: string | undefined
+  if (form.exits.length > 0) {
+    const rows = form.exits.map((row) => ({ price: parsePositive(row.price), percent: parsePositive(row.percent), closedAt: fromLocalInput(row.closedAt) }))
+    if (rows.some((row) => !row.price || !row.percent || !row.closedAt)) errors.exits = 'entry.error.exitRows'
+    else {
+      exitPrice = averageExit(rows as TradeExit[])
+      if (!exitPrice) errors.exits = 'entry.error.exitsTotal'
+      else {
+        exits = rows as TradeExit[]
+        lastExit = exits.reduce((latest, row) => (Date.parse(row.closedAt) > Date.parse(latest) ? row.closedAt : latest), exits[0]!.closedAt)
+      }
+    }
+  } else {
+    exitPrice = parsePositive(form.exitPrice)
+    if (!exitPrice) errors.exitPrice = 'entry.error.price'
+  }
 
   const contractMultiplier = multiplierFor(form, market)
   if (!contractMultiplier) errors.multiplier = 'entry.error.multiplier'
@@ -185,8 +252,9 @@ export function buildTrade(
   if (fees === undefined) errors.fees = 'entry.error.fees'
 
   const openedAt = fromLocalInput(form.openedAt) ?? now.toISOString()
-  const closedAt = fromLocalInput(form.closedAt) ?? now.toISOString()
-  if (Date.parse(closedAt) < Date.parse(openedAt)) errors.closedAt = 'entry.error.closedBeforeOpened'
+  const closedAt = lastExit ?? fromLocalInput(form.closedAt) ?? now.toISOString()
+  if (exits?.some((row) => Date.parse(row.closedAt) < Date.parse(openedAt))) errors.exits = 'entry.error.closedBeforeOpened'
+  else if (Date.parse(closedAt) < Date.parse(openedAt)) errors.closedAt = 'entry.error.closedBeforeOpened'
 
   if (Object.keys(errors).length > 0 || !entryPrice || !exitPrice || !quantity || !contractMultiplier || fees === undefined) {
     return { errors }
@@ -202,6 +270,7 @@ export function buildTrade(
     leverage: market === 'cryptoPerp' ? String(form.leverage) : undefined,
     entryPrice,
     exitPrice,
+    exits,
     quantity,
     contractMultiplier,
     // The stop at entry is fixed when the trade is first logged; later edits move `stopLoss` only.
@@ -251,6 +320,7 @@ export function applyScreenshot(form: EntryForm, parsed: ParsedScreenshot, marke
   }
   if (parsed.exitPrice) {
     next.exitPrice = parsed.exitPrice.value
+    next.exits = []
     recognized.exitPrice = parsed.exitPrice.confidence
   }
   if (parsed.quantity) {

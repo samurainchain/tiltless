@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Account, AssetClass } from '../../core/models'
 import { tradePnl } from '../../core/pnl'
 import { parseScreenshotText } from '../../core/ocr/parseScreenshot'
-import { applyScreenshot, buildTrade, editEntryForm, newEntryForm, previewResult, selectContract, type EntryForm } from './entryForm'
+import { addExit, applyScreenshot, buildTrade, editEntryForm, formExitPrice, newEntryForm, previewResult, removeExit, selectContract, splitExit, type EntryForm } from './entryForm'
 
 const NOW = new Date(2026, 9, 27, 15, 30)
 
@@ -180,5 +180,53 @@ Closing PNL +60.00 USDT`)
   it('switches the size unit when the screenshot gives a USDT size', () => {
     const quote = parseScreenshotText('ETH-USDT-SWAP Long\nPosition size 1,500 USDT')
     expect(applyScreenshot(form('cryptoPerp', {}), quote, 'cryptoPerp').form.sizeUnit).toBe('quote')
+  })
+})
+
+describe('partial exits', () => {
+  const base = () => form('futures', { entryPrice: '100', exitPrice: '105', size: '2', openedAt: '2026-10-27T10:00', closedAt: '2026-10-27T11:00' })
+
+  it('splits a single exit into two halves and adds the rest', () => {
+    const split = splitExit(base())
+    expect(split.exits).toEqual([
+      { price: '105', percent: '50', closedAt: '2026-10-27T11:00' },
+      { price: '', percent: '50', closedAt: '2026-10-27T11:00' },
+    ])
+    const three = addExit({ ...split, exits: [{ ...split.exits[0]!, percent: '30' }, { ...split.exits[1]!, percent: '30' }] })
+    expect(three.exits[2]).toEqual({ price: '', percent: '40', closedAt: '2026-10-27T11:00' })
+  })
+
+  it('goes back to a single exit when one row is left', () => {
+    const split = splitExit(base())
+    const back = removeExit({ ...split, exits: [split.exits[0]!, { price: '110', percent: '50', closedAt: '2026-10-27T12:30' }] }, 0)
+    expect(back.exits).toEqual([])
+    expect(back.exitPrice).toBe('110')
+    expect(back.closedAt).toBe('2026-10-27T12:30')
+  })
+
+  it('saves the weighted average exit, the last exit time and the parts', () => {
+    const filled: EntryForm = {
+      ...base(),
+      exits: [
+        { price: '105', percent: '50', closedAt: '2026-10-27T11:00' },
+        { price: '110', percent: '50', closedAt: '2026-10-27T12:30' },
+      ],
+    }
+    expect(formExitPrice(filled)).toBe('107.5')
+    const { trade } = buildTrade(filled, account('futures'), undefined, NOW)
+    expect(trade?.exitPrice).toBe('107.5')
+    expect(trade?.closedAt).toBe(new Date(2026, 9, 27, 12, 30).toISOString())
+    expect(trade?.exits).toHaveLength(2)
+    expect(previewResult(filled, 'futures').pnl?.toString()).toBe(tradePnl(trade!)?.toString())
+    expect(editEntryForm(trade!).exits).toEqual(filled.exits)
+  })
+
+  it('rejects incomplete rows and shares that do not add up to 100%', () => {
+    const split = splitExit(base())
+    expect(buildTrade(split, account('futures'), undefined, NOW).errors?.exits).toBe('entry.error.exitRows')
+    const short = { ...split, exits: [split.exits[0]!, { price: '110', percent: '40', closedAt: '2026-10-27T12:00' }] }
+    expect(buildTrade(short, account('futures'), undefined, NOW).errors?.exits).toBe('entry.error.exitsTotal')
+    const early = { ...split, exits: [split.exits[0]!, { price: '110', percent: '50', closedAt: '2026-10-27T09:00' }] }
+    expect(buildTrade(early, account('futures'), undefined, NOW).errors?.exits).toBe('entry.error.closedBeforeOpened')
   })
 })

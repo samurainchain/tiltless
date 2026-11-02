@@ -6,10 +6,10 @@ import { navigate, routeHref } from '../../app/router'
 import { useSheets } from '../../app/sheets'
 import { activeFlags, type AutoFlag } from '../../core/mistakeDetector'
 import type { Trade } from '../../core/models'
-import { grossPnl, percentOfDeposit, priceMovePercent, rMultiple, tradeDuration, tradePnl } from '../../core/pnl'
+import { exitParts, grossPnl, percentOfDeposit, priceMovePercent, rMultiple, tradeDuration, tradePnl } from '../../core/pnl'
 import { systemMistakeId } from '../../core/storage/journalStore'
 import { Button, Card, Chip, EmptyState, PnLText, SectionHeader } from '../../design/components'
-import { formatDateTime, formatDecimal, formatDuration, formatMoney, formatPercent, formatR } from '../../i18n/format'
+import { formatDateTime, formatDecimal, formatDuration, formatMoney, formatPercent, formatR, formatTime } from '../../i18n/format'
 import { useI18n, type Translator } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
 import { TradeGallery } from '../images/TradeImages'
@@ -94,6 +94,7 @@ export function TradeDetail({ trade, onDeleted, onDuplicated }: { trade: Trade; 
   const r = rMultiple(trade)
   const duration = tradeDuration(trade)
   const move = priceMovePercent(trade)
+  const parts = exitParts(trade)
   const percent = pnl ? percentOfDeposit(pnl, account?.depositAmount) : undefined
   const tradeMistakes = mistakes.filter((tag) => trade.mistakeIds.includes(tag.id))
   // Flags the trader hasn't tagged by hand or dismissed, with the tag they count toward.
@@ -157,11 +158,27 @@ export function TradeDetail({ trade, onDeleted, onDuplicated }: { trade: Trade; 
         </FactGroup>
         <FactGroup title={t('trade.group.prices')}>
           <Detail label={t('entry.entryPrice')} value={price(trade.entryPrice)} />
-          <Detail label={t('entry.exitPrice')} value={price(trade.exitPrice)} />
+          <Detail label={t(trade.exits?.length ? 'trade.averageExit' : 'entry.exitPrice')} value={price(trade.exitPrice)} />
           <Detail label={t('entry.stopLoss')} value={price(trade.stopLoss)} />
           {trade.initialStopLoss && trade.initialStopLoss !== trade.stopLoss && <Detail label={t('trade.initialStop')} value={price(trade.initialStopLoss)} />}
           {trade.takeProfit && <Detail label={t('trade.takeProfit')} value={price(trade.takeProfit)} />}
         </FactGroup>
+        {parts.length > 0 && (
+          <FactGroup title={t('entry.exits')}>
+            {parts.map((part, index) => (
+              <Detail
+                key={index}
+                label={t('trade.exitPart', { time: formatTime(part.exit.closedAt, locale), percent: formatDecimal(part.exit.percent, locale) })}
+                value={
+                  <span className="exit-part">
+                    <span className="numeric">{price(part.exit.price)}</span>
+                    <PnLText amount={part.pnl} currency={currency} />
+                  </span>
+                }
+              />
+            ))}
+          </FactGroup>
+        )}
         <FactGroup title={t('trade.group.time')}>
           <Detail label={t('entry.openedAt')} value={formatDateTime(trade.openedAt, locale)} />
           <Detail label={t('entry.closedAt')} value={trade.closedAt ? formatDateTime(trade.closedAt, locale) : undefined} />

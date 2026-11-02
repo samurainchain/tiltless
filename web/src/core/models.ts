@@ -80,8 +80,14 @@ export interface Trade {
   /** Crypto perpetuals only. */
   leverage?: DecimalString
   entryPrice: DecimalString
-  /** Missing means the trade is still open. */
+  /** Missing means the trade is still open. With `exits`, their average weighted by size. */
   exitPrice?: DecimalString
+  /**
+   * A position closed in parts (SPEC section 6): two or more exits whose shares add up to 100%.
+   * `exitPrice` holds their weighted average and `closedAt` the last one, so every PnL and R
+   * formula works on the whole trade unchanged.
+   */
+  exits?: TradeExit[]
   /** In the base asset: coins, shares or contracts. */
   quantity: DecimalString
   /** Value of one point for futures, copied from the preset at entry time; "1" elsewhere. */
@@ -110,6 +116,14 @@ export interface Trade {
   source: TradeSource
   createdAt: Timestamp
   updatedAt: Timestamp
+}
+
+/** One part of a position closed at its own price. */
+export interface TradeExit {
+  price: DecimalString
+  /** Share of the position closed here, in percent. */
+  percent: DecimalString
+  closedAt: Timestamp
 }
 
 export interface MistakeTag {

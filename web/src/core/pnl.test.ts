@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseDecimalInput, parsePositive } from './decimal'
 import type { Side, Trade } from './models'
-import { grossPnl, isWin, percentOfDeposit, priceMovePercent, quoteToBaseQuantity, riskAmount, rMultiple, totalPnl, tradeDuration, tradePnl } from './pnl'
+import { averageExit, exitParts, grossPnl, isWin, percentOfDeposit, priceMovePercent, quoteToBaseQuantity, riskAmount, rMultiple, totalPnl, tradeDuration, tradePnl } from './pnl'
 
 type Input = Parameters<typeof rMultiple>[0]
 
@@ -127,5 +127,34 @@ describe('grossPnl and priceMovePercent', () => {
   it('is undefined while the trade is open', () => {
     expect(grossPnl(trade({ side: 'long', exitPrice: undefined }))).toBeUndefined()
     expect(priceMovePercent(trade({ side: 'long', exitPrice: undefined }))).toBeUndefined()
+  })
+})
+
+describe('partial exits', () => {
+  it('averages the exits by share', () => {
+    expect(averageExit([{ price: '105', percent: '50' }, { price: '110', percent: '50' }])).toBe('107.5')
+    expect(averageExit([{ price: '100', percent: '33.33' }, { price: '103', percent: '33.33' }, { price: '106', percent: '33.34' }])).toBe('103.0003')
+  })
+
+  it('needs shares adding up to 100%', () => {
+    expect(averageExit([{ price: '105', percent: '50' }, { price: '110', percent: '40' }])).toBeUndefined()
+    expect(averageExit([])).toBeUndefined()
+  })
+
+  it('splits the PnL between the parts, matching the trade PnL before fees', () => {
+    const exits = [
+      { price: '110', percent: '50', closedAt: '2026-11-02T12:00:00Z' },
+      { price: '100', percent: '50', closedAt: '2026-11-02T11:00:00Z' },
+    ]
+    const trade = { side: 'long' as const, entryPrice: '100', quantity: '2', contractMultiplier: '1', fees: '1', exits, exitPrice: averageExit(exits) }
+    const parts = exitParts(trade)
+    expect(parts.map((part) => part.exit.price)).toEqual(['100', '110'])
+    expect(parts.map((part) => part.pnl.toString())).toEqual(['0', '10'])
+    expect(tradePnl(trade)?.toString()).toBe('9')
+  })
+
+  it('signs short parts', () => {
+    const exits = [{ price: '90', percent: '100', closedAt: '2026-11-02T12:00:00Z' }]
+    expect(exitParts({ side: 'short', entryPrice: '100', quantity: '1', contractMultiplier: '5', exits })[0]!.pnl.toString()).toBe('50')
   })
 })
