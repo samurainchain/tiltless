@@ -35,6 +35,22 @@ export interface Account {
   createdAt: Timestamp
   /** Rules of a prop firm's challenge or funded account, measured against `depositAmount`. */
   challenge?: PropChallenge
+  /**
+   * A practice account (paper or demo trading). Its trades stay out of "All accounts", the
+   * daily limits, the streak and the focus habit; selecting the account shows them.
+   */
+  isDemo?: boolean
+}
+
+/** Ids of practice accounts. */
+export function demoAccountIds(accounts: readonly Account[]): Set<string> {
+  return new Set(accounts.filter((account) => account.isDemo).map((account) => account.id))
+}
+
+/** Trades on real accounts only: practice trades don't count toward the trader's real day. */
+export function realTrades<T extends Pick<Trade, 'accountId'>>(trades: readonly T[], accounts: readonly Account[]): T[] {
+  const demo = demoAccountIds(accounts)
+  return demo.size === 0 ? [...trades] : trades.filter((trade) => !demo.has(trade.accountId))
 }
 
 /**

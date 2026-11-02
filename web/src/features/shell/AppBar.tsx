@@ -4,6 +4,7 @@ import { useAutoFlags, useJournal } from '../../app/journal'
 import { routeHref, type Route } from '../../app/router'
 import { ACCENTS, updateSettings, useSettings, useWeekStart, type LanguageSetting, type ThemeSetting } from '../../app/settings'
 import { useCloud } from '../../app/cloud'
+import { realTrades } from '../../core/models'
 import { markSeen, notices, unseenCount, type Notice, type NoticeKind } from '../../core/notices'
 import { useI18n } from '../../i18n/i18n'
 import { FeedbackForm } from '../feedback/FeedbackForm'
@@ -103,7 +104,8 @@ export function AppBar() {
 
 function NoticeBell() {
   const { t, tp } = useI18n()
-  const { trades, profile, reviews, checkins } = useJournal()
+  const { trades: stored, accounts, profile, reviews, checkins } = useJournal()
+  const trades = useMemo(() => realTrades(stored, accounts), [stored, accounts])
   const autoFlags = useAutoFlags()
   const weekStart = useWeekStart()
   const seen = useSettings().seenNotices ?? []

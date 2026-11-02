@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react'
 import { DEFAULT_REVENGE_MINUTES, detectMistakes, effectiveMistakeIds, type AutoFlag } from '../core/mistakeDetector'
-import type { Account, MistakeTag, Trade } from '../core/models'
+import { demoAccountIds, type Account, type MistakeTag, type Trade } from '../core/models'
 import type { JournalSnapshot, JournalStore } from '../core/storage/journalStore'
 import { useI18n } from '../i18n/i18n'
 import type { MessageKey } from '../i18n/messages/en'
@@ -28,17 +28,23 @@ export function useJournal(): JournalSnapshot {
  * trader turned them off; a flag whose system tag is archived is left out.
  */
 export function useAutoFlags(): ReadonlyMap<string, AutoFlag[]> {
-  const { trades, profile, mistakes } = useJournal()
+  const { trades, profile, mistakes, accounts } = useJournal()
   return useMemo(() => {
     if (profile.autoMistakes === false) return new Map<string, AutoFlag[]>()
     const archived = new Set(mistakes.filter((tag) => tag.isArchived && tag.systemKey).map((tag) => tag.systemKey))
-    const flags = detectMistakes(trades, {
-      revengeMinutes: profile.revengeMinutes ?? DEFAULT_REVENGE_MINUTES,
-      dailyTradeLimit: profile.dailyTradeLimit,
-    })
+    const settings = { revengeMinutes: profile.revengeMinutes ?? DEFAULT_REVENGE_MINUTES, dailyTradeLimit: profile.dailyTradeLimit }
+    // Practice trades are checked on their own: a demo loss doesn't make a real trade revenge.
+    const demo = demoAccountIds(accounts)
+    const flags =
+      demo.size === 0
+        ? detectMistakes(trades, settings)
+        : new Map([
+            ...detectMistakes(trades.filter((trade) => !demo.has(trade.accountId)), settings),
+            ...detectMistakes(trades.filter((trade) => demo.has(trade.accountId)), settings),
+          ])
     if (archived.size === 0) return flags
     return new Map([...flags].map(([id, list]) => [id, list.filter((flag) => !archived.has(flag.key))]))
-  }, [trades, profile, mistakes])
+  }, [trades, profile, mistakes, accounts])
 }
 
 /** Every trade with its active automatic flags merged into `mistakeIds`, for lists and stats. */

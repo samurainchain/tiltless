@@ -7,6 +7,7 @@ import { useSheets } from '../../app/sheets'
 import { dayLimits, ruleStreak } from '../../core/limits'
 import { defaultReviewWeek } from '../../core/review'
 import { totalPnl } from '../../core/pnl'
+import { realTrades } from '../../core/models'
 import { closedTrades, localDayKey, mistakeOfTheWeek } from '../../core/stats'
 import { Button, Card, EmptyState, LimitBar, PnLText, SectionHeader } from '../../design/components'
 import { formatDay, formatMoney } from '../../i18n/format'
@@ -25,7 +26,8 @@ import { TradeRow } from '../trades/TradeRow'
 /** Today's PnL, limits, streak, the mistake of the week and today's trades (SPEC section 4.3). */
 export function TodayPage() {
   const { t, tp, locale } = useI18n()
-  const { accounts, mistakes, trades: allTrades, profile, reviews } = useJournal()
+  const { accounts, mistakes, trades: storedTrades, profile, reviews } = useJournal()
+  const allTrades = realTrades(storedTrades, accounts)
   const weekStart = useWeekStart()
   const { trades, currency, selected } = useVisibleTrades()
   const mistakeName = useMistakeName()

@@ -26,7 +26,7 @@ export function AccountSwitcher() {
         <option value="all">{t('accounts.all')}</option>
         {active.map((account) => (
           <option key={account.id} value={account.id}>
-            {account.name}
+            {account.isDemo ? `${account.name} · ${t('accounts.demoTag')}` : account.name}
           </option>
         ))}
       </select>

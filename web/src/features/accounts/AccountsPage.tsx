@@ -71,7 +71,7 @@ export function AccountsPage() {
                     {account.isArchived && <span className="caption"> · {t('accounts.archived')}</span>}
                   </p>
                   <p className="caption">
-                    {[t(`market.${account.assetClass}`), account.venue, account.currency, tp('accounts.tradeCount', tradeCount)].filter(Boolean).join(' · ')}
+                    {[account.isDemo ? t('accounts.demoTag') : '', t(`market.${account.assetClass}`), account.venue, account.currency, tp('accounts.tradeCount', tradeCount)].filter(Boolean).join(' · ')}
                   </p>
                 </div>
                 <div className="account-item__actions">

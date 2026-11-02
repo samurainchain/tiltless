@@ -2,7 +2,7 @@ import { Target } from 'lucide-react'
 import { useJournal, useMistakeName } from '../../app/journal'
 import { useWeekStart } from '../../app/settings'
 import { activeFocus, focusProgress } from '../../core/focus'
-import type { Currency } from '../../core/models'
+import { realTrades, type Currency } from '../../core/models'
 import { Card } from '../../design/components'
 import { formatMoney } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
@@ -13,7 +13,8 @@ import { useI18n } from '../../i18n/i18n'
  */
 export function FocusCard({ currency }: { currency: Currency }) {
   const { t, tp, locale } = useI18n()
-  const { reviews, mistakes, trades } = useJournal()
+  const { reviews, mistakes, trades: stored, accounts } = useJournal()
+  const trades = realTrades(stored, accounts)
   const mistakeName = useMistakeName()
   const weekStart = useWeekStart()
   const now = new Date()

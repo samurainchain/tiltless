@@ -1,7 +1,7 @@
 import type Big from 'big.js'
 import { useMemo } from 'react'
 import { useFlaggedTrades, useJournal, useSelectedAccount } from '../../app/journal'
-import type { Account, Currency, Trade } from '../../core/models'
+import { realTrades, type Account, type Currency, type Trade } from '../../core/models'
 import { totalPnl } from '../../core/pnl'
 
 /** Local calendar day a trade counts toward: its exit, or its entry while open. */
@@ -64,7 +64,8 @@ export function useVisibleTrades(): { trades: Trade[]; currency: Currency; selec
   const selected = useSelectedAccount()
   return useMemo(
     () => ({
-      trades: selected ? trades.filter((trade) => trade.accountId === selected.id) : trades,
+      // "All accounts" leaves practice accounts out; selecting one shows its trades.
+      trades: selected ? trades.filter((trade) => trade.accountId === selected.id) : realTrades(trades, accounts),
       currency: totalsCurrency(selected, accounts),
       selected,
     }),

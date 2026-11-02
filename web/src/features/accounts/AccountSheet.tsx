@@ -33,6 +33,7 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
   const [currency, setCurrency] = useState<Currency>(existing?.currency ?? 'USDT')
   const [deposit, setDeposit] = useState(existing?.depositAmount ?? '')
   const [colorHex, setColorHex] = useState(existing?.colorHex ?? TAG_COLORS[accounts.length % TAG_COLORS.length]!)
+  const [isDemo, setIsDemo] = useState(existing?.isDemo ?? false)
   const [challengeOn, setChallengeOn] = useState(Boolean(existing?.challenge))
   const [rules, setRules] = useState(() => challengeFields(existing?.challenge ?? defaultChallenge(new Date())))
   const [errors, setErrors] = useState<{ name?: string; deposit?: string; target?: string; daily?: string; maxLoss?: string; days?: string; start?: string }>({})
@@ -74,6 +75,7 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
       isArchived: existing?.isArchived ?? false,
       createdAt: existing?.createdAt ?? new Date().toISOString(),
       challenge,
+      isDemo: isDemo || undefined,
     }
     await store.saveAccount(account)
     onClose()
@@ -124,6 +126,14 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
             <input id={ids.deposit} className="input numeric" inputMode="decimal" value={deposit} onChange={(event) => setDeposit(event.target.value)} />
           </Field>
         </div>
+
+        <label className="toggle-row">
+          <input type="checkbox" checked={isDemo} onChange={(event) => setIsDemo(event.target.checked)} />
+          <span>
+            {t('accounts.demo')}
+            <span className="caption toggle-row__hint">{t('accounts.demoHint')}</span>
+          </span>
+        </label>
 
         <fieldset className="fieldset form-stack">
           <legend className="field__label">{t('accounts.challenge')}</legend>

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { dayLimits, shouldAlert } from '../core/limits'
+import { realTrades } from '../core/models'
 import { localDayKey } from '../core/stats'
 import { useI18n } from '../i18n/i18n'
 import { useJournal } from './journal'
@@ -42,7 +43,8 @@ function writeLastAlert(day: string): void {
  * limit is reached, at most once a day (SPEC section 6, anti-tilt).
  */
 export function useLimitAlerts(): void {
-  const { trades, profile, status } = useJournal()
+  const { trades: stored, accounts, profile, status } = useJournal()
+  const trades = realTrades(stored, accounts)
   const { t } = useI18n()
 
   useEffect(() => {
