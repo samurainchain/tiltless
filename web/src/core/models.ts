@@ -140,6 +140,8 @@ export interface WeeklyReview {
   whatWorked: string
   whatRepeated: string
   nextRule: string
+  /** The one mistake to work on next week (a `MistakeTag` id), shown on Today. */
+  focusMistakeId?: string
   createdAt: Timestamp
   updatedAt: Timestamp
 }

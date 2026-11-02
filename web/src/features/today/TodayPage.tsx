@@ -12,6 +12,7 @@ import { Button, Card, EmptyState, LimitBar, PnLText, SectionHeader } from '../.
 import { formatDay, formatMoney } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { DayCheckInCard } from '../checkin/DayCheckInCard'
+import { FocusCard } from './FocusCard'
 import { SessionClock } from '../sessions/SessionClock'
 import { useAccess } from '../../app/entitlement'
 import { canUse } from '../../core/entitlements'
@@ -135,6 +136,8 @@ export function TodayPage() {
           )}
         </Card>
       )}
+
+      {canUse('weeklyReview', access) && <FocusCard currency={currency} />}
 
       {weekMistake && (
         <Card className="week-mistake">

@@ -857,3 +857,35 @@
   color: var(--color-warning);
   letter-spacing: 0.1em;
 }
+
+/* Today: the habit picked at the weekly review */
+
+.focus-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-hair);
+  margin-top: var(--space-s);
+}
+
+.focus-card__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.focus-card__label > svg {
+  color: var(--color-accent);
+}
+
+.focus-card__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-s);
+  font-size: var(--text-headline);
+  font-weight: 500;
+}
+
+.focus-card__status--clean {
+  color: var(--color-profit);
+}

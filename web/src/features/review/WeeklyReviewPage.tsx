@@ -125,7 +125,13 @@ export function WeeklyReviewPage({ week }: { week?: string }) {
         </>
       )}
 
-      <ReviewForm key={startKey} weekStart={startKey} existing={existing} onSave={(review) => store.saveReview(review)} />
+      <ReviewForm
+        key={startKey}
+        weekStart={startKey}
+        existing={existing}
+        suggestedFocus={summary.topMistake?.tag.id}
+        onSave={(review) => store.saveReview(review)}
+      />
 
       <SectionHeader title={t('review.shareSection')} />
       <ShareBlock
@@ -151,15 +157,30 @@ function Stat({ label, value }: { label: string; value: string }) {
   )
 }
 
-function ReviewForm({ weekStart, existing, onSave }: { weekStart: string; existing?: WeeklyReview; onSave: (review: WeeklyReview) => Promise<void> }) {
+function ReviewForm({
+  weekStart,
+  existing,
+  suggestedFocus,
+  onSave,
+}: {
+  weekStart: string
+  existing?: WeeklyReview
+  /** The week's costliest mistake, preselected as the focus of a new review. */
+  suggestedFocus?: string
+  onSave: (review: WeeklyReview) => Promise<void>
+}) {
   const { t } = useI18n()
-  const ids = { worked: useId(), repeated: useId(), rule: useId() }
+  const { mistakes } = useJournal()
+  const mistakeName = useMistakeName()
+  const ids = { worked: useId(), repeated: useId(), rule: useId(), focus: useId() }
   const [whatWorked, setWhatWorked] = useState(existing?.whatWorked ?? '')
   const [whatRepeated, setWhatRepeated] = useState(existing?.whatRepeated ?? '')
   const [nextRule, setNextRule] = useState(existing?.nextRule ?? '')
+  const [focus, setFocus] = useState(existing ? (existing.focusMistakeId ?? '') : (suggestedFocus ?? ''))
   const [saved, setSaved] = useState(false)
+  const focusOptions = mistakes.filter((tag) => !tag.isArchived || tag.id === focus)
 
-  useEffect(() => setSaved(false), [whatWorked, whatRepeated, nextRule])
+  useEffect(() => setSaved(false), [whatWorked, whatRepeated, nextRule, focus])
 
   const save = async () => {
     const now = new Date().toISOString()
@@ -169,6 +190,7 @@ function ReviewForm({ weekStart, existing, onSave }: { weekStart: string; existi
       whatWorked: whatWorked.trim(),
       whatRepeated: whatRepeated.trim(),
       nextRule: nextRule.trim(),
+      focusMistakeId: focus || undefined,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     })
@@ -187,6 +209,16 @@ function ReviewForm({ weekStart, existing, onSave }: { weekStart: string; existi
         </Field>
         <Field label={t('review.nextRule')} htmlFor={ids.rule}>
           <textarea id={ids.rule} className="input" value={nextRule} onChange={(event) => setNextRule(event.target.value)} />
+        </Field>
+        <Field label={t('review.focus')} htmlFor={ids.focus} hint={t('review.focusHint')}>
+          <select id={ids.focus} className="input" value={focus} onChange={(event) => setFocus(event.target.value)}>
+            <option value="">{t('review.focusNone')}</option>
+            {focusOptions.map((tag) => (
+              <option key={tag.id} value={tag.id}>
+                {mistakeName(tag)}
+              </option>
+            ))}
+          </select>
         </Field>
         <Button variant="primary" onClick={save}>
           {t('action.save')}
