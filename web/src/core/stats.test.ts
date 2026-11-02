@@ -195,21 +195,24 @@ describe('mistake costs', () => {
 describe('periods', () => {
   const now = new Date(2026, 9, 28, 15) // Wednesday 28 Oct 2026
 
-  it('starts the week on the chosen weekday', () => {
-    expect(periodStart('week', now, 1)).toEqual(new Date(2026, 9, 26))
-    expect(periodStart('week', now, 0)).toEqual(new Date(2026, 9, 25))
+  it('rolls: the last 7, 30 and 90 days, today included', () => {
+    expect(periodStart('week', now)).toEqual(new Date(2026, 9, 22))
+    expect(periodStart('month', now)).toEqual(new Date(2026, 8, 29))
+    expect(periodStart('quarter', now)).toEqual(new Date(2026, 6, 31))
+    expect(periodStart('all', now)).toBeUndefined()
   })
 
-  it('uses calendar months; the quarter covers this month and the two before', () => {
-    expect(periodStart('month', now, 1)).toEqual(new Date(2026, 9, 1))
-    expect(periodStart('quarter', now, 1)).toEqual(new Date(2026, 7, 1))
-    expect(periodStart('all', now, 1)).toBeUndefined()
+  it('still shows last week on the first days of a new week and month', () => {
+    const monday = new Date(2026, 10, 2, 9) // Monday 2 Nov 2026
+    const trades = closedTrades([trade('5', new Date(2026, 9, 28, 14)), trade('-3', new Date(2026, 9, 30, 11))])
+    expect(inPeriod(trades, 'week', monday)).toHaveLength(2)
+    expect(inPeriod(trades, 'month', monday)).toHaveLength(2)
   })
 
   it('filters trades by exit time', () => {
-    const trades = closedTrades([trade('1', new Date(2026, 9, 25, 23)), trade('2', new Date(2026, 9, 26, 0, 5))])
-    expect(inPeriod(trades, 'week', now, 1).map((item) => item.pnl.toString())).toEqual(['2'])
-    expect(inPeriod(trades, 'all', now, 1)).toHaveLength(2)
+    const trades = closedTrades([trade('1', new Date(2026, 9, 21, 23)), trade('2', new Date(2026, 9, 22, 0, 5))])
+    expect(inPeriod(trades, 'week', now).map((item) => item.pnl.toString())).toEqual(['2'])
+    expect(inPeriod(trades, 'all', now)).toHaveLength(2)
   })
 })
 

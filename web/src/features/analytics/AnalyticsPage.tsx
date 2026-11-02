@@ -1,6 +1,6 @@
 import { ChartColumn, LayoutGrid, Plus, Share2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { updateSettings, useSettings, useWeekStart } from '../../app/settings'
+import { updateSettings, useSettings } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
 import { defaultLayout, normalizeLayout, type DashboardLayout } from '../../core/dashboard'
 import { closedTrades, inPeriod, metrics, PERIODS, type Period } from '../../core/stats'
@@ -22,7 +22,6 @@ export function AnalyticsPage() {
   const { t } = useI18n()
   const { trades, currency } = useVisibleTrades()
   const { newTrade } = useSheets()
-  const weekStart = useWeekStart()
   const settings = useSettings()
   const [period, setPeriod] = useState<Period>('month')
   const [draft, setDraft] = useState<DashboardLayout>()
@@ -30,7 +29,7 @@ export function AnalyticsPage() {
   const access = useAccess()
 
   const closed = useMemo(() => closedTrades(trades), [trades])
-  const inRange = useMemo(() => inPeriod(closed, period, new Date(), weekStart), [closed, period, weekStart])
+  const inRange = useMemo(() => inPeriod(closed, period, new Date()), [closed, period])
   const summary = useMemo(() => metrics(inRange), [inRange])
   // One object per change of data, so moving blocks around doesn't redraw their charts.
   const data = useMemo(() => ({ inRange, closed, summary, currency }), [inRange, closed, summary, currency])

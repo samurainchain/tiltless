@@ -1,6 +1,6 @@
 import type { Emotion, Trade } from '../../core/models'
 import { tradePnl } from '../../core/pnl'
-import { periodStart, type Period, type WeekStart } from '../../core/stats'
+import { periodStart, type Period } from '../../core/stats'
 import { validRating } from '../../core/tradeTable'
 
 /** Filters for the trade list (SPEC section 4.5). Unset fields don't filter. */
@@ -19,8 +19,8 @@ export function activeFilterCount(filter: TradeFilter): number {
   return Object.values(filter).filter((value) => value !== undefined).length
 }
 
-export function filterTrades(trades: readonly Trade[], filter: TradeFilter, now: Date, weekStart: WeekStart): Trade[] {
-  const since = filter.period ? periodStart(filter.period, now, weekStart) : undefined
+export function filterTrades(trades: readonly Trade[], filter: TradeFilter, now: Date): Trade[] {
+  const since = filter.period ? periodStart(filter.period, now) : undefined
   return trades.filter((trade) => {
     if (since && new Date(trade.closedAt ?? trade.openedAt) < since) return false
     if (filter.symbol && trade.symbol !== filter.symbol) return false

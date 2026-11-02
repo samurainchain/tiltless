@@ -19,31 +19,31 @@ const NOW = new Date(2026, 9, 28, 12) // Wednesday
 const trades = [
   trade('50', new Date(2026, 9, 27), { symbol: 'ETHUSDT', emotion: 'calm', setupIds: ['breakout'] }),
   trade('-20', new Date(2026, 9, 26), { emotion: 'fomo', mistakeIds: ['m-fomo'] }),
-  trade('-5', new Date(2026, 8, 30), { emotion: 'fomo', mistakeIds: ['m-fomo', 'm-early'] }),
+  trade('-5', new Date(2026, 8, 20), { emotion: 'fomo', mistakeIds: ['m-fomo', 'm-early'] }), // more than 30 days ago
   trade(undefined, new Date(2026, 9, 28)),
 ]
 const ids = (list: Trade[]) => list.map((item) => item.id)
 
 describe('filterTrades', () => {
   it('returns everything without filters', () => {
-    expect(filterTrades(trades, {}, NOW, 1)).toHaveLength(4)
+    expect(filterTrades(trades, {}, NOW)).toHaveLength(4)
   })
 
   it('filters by period, symbol, emotion, mistake and setup', () => {
-    expect(ids(filterTrades(trades, { period: 'week' }, NOW, 1))).toEqual([trades[0]!.id, trades[1]!.id, trades[3]!.id])
-    expect(ids(filterTrades(trades, { symbol: 'ETHUSDT' }, NOW, 1))).toEqual([trades[0]!.id])
-    expect(filterTrades(trades, { emotion: 'fomo' }, NOW, 1)).toHaveLength(2)
-    expect(ids(filterTrades(trades, { mistakeId: 'm-early' }, NOW, 1))).toEqual([trades[2]!.id])
-    expect(ids(filterTrades(trades, { setupId: 'breakout' }, NOW, 1))).toEqual([trades[0]!.id])
+    expect(ids(filterTrades(trades, { period: 'week' }, NOW))).toEqual([trades[0]!.id, trades[1]!.id, trades[3]!.id])
+    expect(ids(filterTrades(trades, { symbol: 'ETHUSDT' }, NOW))).toEqual([trades[0]!.id])
+    expect(filterTrades(trades, { emotion: 'fomo' }, NOW)).toHaveLength(2)
+    expect(ids(filterTrades(trades, { mistakeId: 'm-early' }, NOW))).toEqual([trades[2]!.id])
+    expect(ids(filterTrades(trades, { setupId: 'breakout' }, NOW))).toEqual([trades[0]!.id])
   })
 
   it('filters by result, leaving out open trades', () => {
-    expect(ids(filterTrades(trades, { result: 'profit' }, NOW, 1))).toEqual([trades[0]!.id])
-    expect(filterTrades(trades, { result: 'loss' }, NOW, 1)).toHaveLength(2)
+    expect(ids(filterTrades(trades, { result: 'profit' }, NOW))).toEqual([trades[0]!.id])
+    expect(filterTrades(trades, { result: 'loss' }, NOW)).toHaveLength(2)
   })
 
   it('combines filters', () => {
-    expect(ids(filterTrades(trades, { emotion: 'fomo', period: 'month' }, NOW, 1))).toEqual([trades[1]!.id])
+    expect(ids(filterTrades(trades, { emotion: 'fomo', period: 'month' }, NOW))).toEqual([trades[1]!.id])
   })
 })
 
@@ -62,8 +62,8 @@ describe('rating filter', () => {
   const rated = [trade('10', NOW, { id: 'five', rating: 5 }), trade('-10', NOW, { id: 'two', rating: 2 }), trade('1', NOW, { id: 'none' })]
 
   it('keeps trades with exactly that many stars, or the unrated ones', () => {
-    expect(ids(filterTrades(rated, { rating: 5 }, NOW, 1))).toEqual(['five'])
-    expect(ids(filterTrades(rated, { rating: 'none' }, NOW, 1))).toEqual(['none'])
+    expect(ids(filterTrades(rated, { rating: 5 }, NOW))).toEqual(['five'])
+    expect(ids(filterTrades(rated, { rating: 'none' }, NOW))).toEqual(['none'])
     expect(activeFilterCount({ rating: 'none' })).toBe(1)
   })
 })

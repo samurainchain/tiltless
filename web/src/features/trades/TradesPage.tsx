@@ -1,7 +1,7 @@
 import { Calculator, ListChecks, Plus, SlidersHorizontal } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useJournal } from '../../app/journal'
-import { updateSettings, useSettings, useWeekStart } from '../../app/settings'
+import { updateSettings, useSettings } from '../../app/settings'
 import { DEFAULT_SORT, pageOf, sortTrades, TRADES_PER_PAGE, type TradeSort } from '../../core/tradeTable'
 import { useSheets } from '../../app/sheets'
 import { Button, EmptyState, PnLText, Segmented } from '../../design/components'
@@ -31,12 +31,11 @@ export function TradesPage() {
   const { t, locale } = useI18n()
   const { trades, currency } = useVisibleTrades()
   const { newTrade, openCalculator } = useSheets()
-  const weekStart = useWeekStart()
   const [filter, setFilter] = useState<TradeFilter>({})
   const [filtersOpen, setFiltersOpen] = useState(false)
   const count = activeFilterCount(filter)
   const view: View = useSettings().tradesView ?? defaultView()
-  const filtered = useMemo(() => filterTrades(trades, filter, new Date(), weekStart), [trades, filter, weekStart])
+  const filtered = useMemo(() => filterTrades(trades, filter, new Date()), [trades, filter])
   const days = view === 'days' ? groupByDay(filtered) : []
 
   return (

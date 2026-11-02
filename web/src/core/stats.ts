@@ -40,25 +40,21 @@ export function startOfWeek(date: Date, weekStart: WeekStart): Date {
   return day
 }
 
+/** Days in each rolling period, today included. */
+export const PERIOD_DAYS: Record<Exclude<Period, 'all'>, number> = { week: 7, month: 30, quarter: 90 }
+
 /**
- * First moment of a period: the current calendar week, the current month, the current
- * month plus the two before it, or undefined for all time.
+ * First moment of a period: the start of the day 6, 29 or 89 days ago, so "week" is the last 7
+ * days, "month" the last 30 and "quarter" the last 90, or undefined for all time. Rolling, not
+ * calendar periods: on the first days of a week or a month the analytics still show recent trades.
  */
-export function periodStart(period: Period, now: Date, weekStart: WeekStart): Date | undefined {
-  switch (period) {
-    case 'week':
-      return startOfWeek(now, weekStart)
-    case 'month':
-      return new Date(now.getFullYear(), now.getMonth(), 1)
-    case 'quarter':
-      return new Date(now.getFullYear(), now.getMonth() - 2, 1)
-    case 'all':
-      return undefined
-  }
+export function periodStart(period: Period, now: Date): Date | undefined {
+  if (period === 'all') return undefined
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate() - (PERIOD_DAYS[period] - 1))
 }
 
-export function inPeriod(trades: readonly ClosedTrade[], period: Period, now: Date, weekStart: WeekStart): ClosedTrade[] {
-  const start = periodStart(period, now, weekStart)
+export function inPeriod(trades: readonly ClosedTrade[], period: Period, now: Date): ClosedTrade[] {
+  const start = periodStart(period, now)
   return start ? trades.filter((item) => item.closedAt >= start) : [...trades]
 }
 
