@@ -40,4 +40,4 @@ jobs:
             echo "::warning::SUPABASE_ACCESS_TOKEN is not set, so the functions were not deployed."
             exit 0
           fi
-          supabase functions deploy --project-ref "$PROJECT_REF" --use-api
+          supabase functions deploy --project-ref "$PROJECT_REF" --use-api --yes
