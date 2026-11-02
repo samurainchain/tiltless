@@ -1541,3 +1541,9 @@
   font-weight: 600;
   color: var(--color-accent);
 }
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+}

@@ -137,8 +137,11 @@ export function lastSevenDays(now: Date, timeZone: string): Set<string> {
   return new Set(Array.from({ length: 7 }, (_, index) => localDay(new Date(now.getTime() - index * 86_400_000), timeZone)))
 }
 
-/** What the hourly run should send a linked trader now. */
-export function dueMessages(link: TelegramLink, reviewWeekday: number, now: Date): { daily: boolean; review: boolean } {
+/** The schedule fields a Telegram link and a push subscription share. */
+export type Schedule = Pick<TelegramLink, 'time_zone' | 'daily_summary' | 'review_reminder' | 'last_daily_sent' | 'last_review_sent'>
+
+/** What the hourly run should send now, to a Telegram chat or a device. */
+export function dueMessages(link: Schedule, reviewWeekday: number, now: Date): { daily: boolean; review: boolean } {
   const today = localDay(now, link.time_zone)
   const clock = localClock(now, link.time_zone)
   return {

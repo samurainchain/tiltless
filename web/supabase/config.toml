@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.telegram-digest]
 verify_jwt = false
+
+[functions.push-account]
+verify_jwt = false

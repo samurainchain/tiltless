@@ -56,3 +56,36 @@ self.addEventListener('fetch', (event) => {
       .catch(async () => (await match(request)) ?? (request.mode === 'navigate' ? match(new Request(url.pathname.startsWith('/app') ? './app/' : './')) : Response.error())),
   )
 })
+
+// Web push (SPEC section 4.10): the evening summary and the review reminder, sent by the
+// telegram-digest function. The message is { title, body, url, tag }.
+self.addEventListener('push', (event) => {
+  let message = { title: 'Tiltless', body: '', url: './app/#/today', tag: 'tiltless' }
+  try {
+    message = { ...message, ...event.data.json() }
+  } catch {
+    if (event.data) message.body = event.data.text()
+  }
+  event.waitUntil(
+    self.registration.showNotification(message.title, {
+      body: message.body,
+      tag: message.tag,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: message.url },
+    }),
+  )
+})
+
+// A click opens the journal at the message's screen, reusing an open journal tab.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const target = new URL(event.notification.data?.url ?? './app/#/today', self.location.origin)
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((client) => new URL(client.url).pathname.startsWith('/app'))
+      if (open) return open.navigate(target.href).then((client) => (client ?? open).focus())
+      return self.clients.openWindow(target.href)
+    }),
+  )
+})
