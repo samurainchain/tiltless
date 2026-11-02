@@ -411,6 +411,10 @@ textarea.input {
   color: var(--color-loss);
 }
 
+.limit-bar--progress .limit-bar__fill {
+  background: var(--color-profit);
+}
+
 /* Fields filled from a screenshot */
 
 .field--recognized .input {

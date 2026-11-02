@@ -33,6 +33,25 @@ export interface Account {
   sortOrder: number
   isArchived: boolean
   createdAt: Timestamp
+  /** Rules of a prop firm's challenge or funded account, measured against `depositAmount`. */
+  challenge?: PropChallenge
+}
+
+/**
+ * A prop firm's rules (SPEC section 4.11). Percentages are of the account size (`depositAmount`),
+ * as most firms count them; a missing rule is not checked.
+ */
+export interface PropChallenge {
+  /** Profit that passes the challenge; missing for a funded account. */
+  profitTargetPct?: DecimalString
+  /** Largest loss within one day. */
+  dailyLossPct?: DecimalString
+  /** Largest loss from the account size, overall. */
+  maxLossPct?: DecimalString
+  /** Days with at least one closed trade needed to pass. */
+  minTradingDays?: number
+  /** Local date `YYYY-MM-DD`; trades closed earlier don't count. */
+  startDate: string
 }
 
 export interface Trade {

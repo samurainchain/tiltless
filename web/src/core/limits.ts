@@ -25,7 +25,8 @@ export interface DayLimits {
   reached: boolean
 }
 
-function level(ratio: number): LimitLevel {
+/** 'warning' from 80% of a limit, 'reached' from 100%. */
+export function limitLevel(ratio: number): LimitLevel {
   if (ratio >= 1) return 'reached'
   if (ratio >= WARNING_RATIO) return 'warning'
   return 'ok'
@@ -48,11 +49,11 @@ export function dayLimits(trades: readonly Trade[], profile: JournalProfile, now
     const limit = new Big(profile.dailyLossLimit)
     const used = netLoss(today)
     const ratio = Number(used.div(limit).toFixed(4))
-    result.loss = { used, limit, ratio, level: level(ratio) }
+    result.loss = { used, limit, ratio, level: limitLevel(ratio) }
   }
   if (profile.dailyTradeLimit && profile.dailyTradeLimit > 0) {
     const ratio = today.length / profile.dailyTradeLimit
-    result.trades = { used: today.length, limit: profile.dailyTradeLimit, ratio, level: level(ratio) }
+    result.trades = { used: today.length, limit: profile.dailyTradeLimit, ratio, level: limitLevel(ratio) }
   }
   result.reached = result.loss?.level === 'reached' || result.trades?.level === 'reached'
   return result

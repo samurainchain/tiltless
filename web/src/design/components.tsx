@@ -239,14 +239,17 @@ export function LimitBar({
   value,
   ratio,
   level,
+  tone = 'limit',
 }: {
   label: string
   value: string
   ratio: number
   level: 'ok' | 'warning' | 'reached'
+  /** 'progress' fills toward a goal (a profit target) in the profit color. */
+  tone?: 'limit' | 'progress'
 }) {
   return (
-    <div className={`limit-bar limit-bar--${level}`}>
+    <div className={`limit-bar limit-bar--${level}${tone === 'progress' ? ' limit-bar--progress' : ''}`}>
       <div className="limit-bar__text">
         <span>{label}</span>
         <span className="numeric">{value}</span>

@@ -12,6 +12,7 @@ import { Button, Card, EmptyState, LimitBar, PnLText, SectionHeader } from '../.
 import { formatDay, formatMoney } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { DayCheckInCard } from '../checkin/DayCheckInCard'
+import { ChallengeCards } from './ChallengeCard'
 import { FocusCard } from './FocusCard'
 import { SessionClock } from '../sessions/SessionClock'
 import { useAccess } from '../../app/entitlement'
@@ -26,7 +27,7 @@ export function TodayPage() {
   const { t, tp, locale } = useI18n()
   const { accounts, mistakes, trades: allTrades, profile, reviews } = useJournal()
   const weekStart = useWeekStart()
-  const { trades, currency } = useVisibleTrades()
+  const { trades, currency, selected } = useVisibleTrades()
   const mistakeName = useMistakeName()
   const { newTrade, newAccount, openCalculator } = useSheets()
   const access = useAccess()
@@ -136,6 +137,8 @@ export function TodayPage() {
           )}
         </Card>
       )}
+
+      <ChallengeCards selected={selected} />
 
       {canUse('weeklyReview', access) && <FocusCard currency={currency} />}
 

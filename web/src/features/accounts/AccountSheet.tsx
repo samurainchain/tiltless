@@ -4,8 +4,9 @@ import { useAccess } from '../../app/entitlement'
 import { canAddAccount } from '../../core/entitlements'
 import { ProLock } from '../billing/ProLock'
 import { useSheets } from '../../app/sheets'
+import { defaultChallenge } from '../../core/challenge'
 import { parsePositive } from '../../core/decimal'
-import { ASSET_CLASSES, CURRENCIES, newId, TAG_COLORS, type Account, type AssetClass, type Currency } from '../../core/models'
+import { ASSET_CLASSES, CURRENCIES, newId, TAG_COLORS, type Account, type AssetClass, type Currency, type PropChallenge } from '../../core/models'
 import { Button, Field, Segmented, Sheet } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
 
@@ -24,7 +25,7 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
   const { t } = useI18n()
   const store = useStore()
   const { accounts, trades } = useJournal()
-  const ids = { name: useId(), venue: useId(), deposit: useId(), market: useId() }
+  const ids = { name: useId(), venue: useId(), deposit: useId(), market: useId(), target: useId(), daily: useId(), maxLoss: useId(), days: useId(), start: useId() }
 
   const [name, setName] = useState(existing?.name ?? '')
   const [assetClass, setAssetClass] = useState<AssetClass>(existing?.assetClass ?? 'cryptoPerp')
@@ -32,7 +33,10 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
   const [currency, setCurrency] = useState<Currency>(existing?.currency ?? 'USDT')
   const [deposit, setDeposit] = useState(existing?.depositAmount ?? '')
   const [colorHex, setColorHex] = useState(existing?.colorHex ?? TAG_COLORS[accounts.length % TAG_COLORS.length]!)
-  const [errors, setErrors] = useState<{ name?: string; deposit?: string }>({})
+  const [challengeOn, setChallengeOn] = useState(Boolean(existing?.challenge))
+  const [rules, setRules] = useState(() => challengeFields(existing?.challenge ?? defaultChallenge(new Date())))
+  const [errors, setErrors] = useState<{ name?: string; deposit?: string; target?: string; daily?: string; maxLoss?: string; days?: string; start?: string }>({})
+  const setRule = (key: keyof typeof rules) => (value: string) => setRules((current) => ({ ...current, [key]: value }))
 
   // The market of an account with trades is fixed: its trades' fields and math depend on it.
   const marketLocked = Boolean(existing && trades.some((trade) => trade.accountId === existing.id))
@@ -40,11 +44,23 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
   const save = async (event: FormEvent) => {
     event.preventDefault()
     const depositAmount = deposit.trim() ? parsePositive(deposit) : undefined
+    const percent = (value: string) => (value.trim() ? parsePositive(value) : undefined)
+    const badPercent = (value: string) => (challengeOn && value.trim() && !percent(value) ? t('entry.error.price') : undefined)
+    const days = rules.days.trim() ? Number(rules.days) : undefined
     const nextErrors = {
       name: name.trim() ? undefined : t('accounts.error.name'),
-      deposit: deposit.trim() && !depositAmount ? t('entry.error.price') : undefined,
+      deposit:
+        deposit.trim() && !depositAmount ? t('entry.error.price') : challengeOn && !depositAmount ? t('accounts.error.challengeSize') : undefined,
+      target: badPercent(rules.target),
+      daily: badPercent(rules.daily),
+      maxLoss: badPercent(rules.maxLoss),
+      days: challengeOn && days !== undefined && !(Number.isInteger(days) && days > 0) ? t('accounts.error.days') : undefined,
+      start: challengeOn && !/^\d{4}-\d{2}-\d{2}$/.test(rules.start) ? t('accounts.error.date') : undefined,
     }
-    if (nextErrors.name || nextErrors.deposit) return setErrors(nextErrors)
+    if (Object.values(nextErrors).some(Boolean)) return setErrors(nextErrors)
+    const challenge: PropChallenge | undefined = challengeOn
+      ? { profitTargetPct: percent(rules.target), dailyLossPct: percent(rules.daily), maxLossPct: percent(rules.maxLoss), minTradingDays: days, startDate: rules.start }
+      : undefined
 
     const account: Account = {
       id: existing?.id ?? newId(),
@@ -57,6 +73,7 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
       sortOrder: existing?.sortOrder ?? accounts.length,
       isArchived: existing?.isArchived ?? false,
       createdAt: existing?.createdAt ?? new Date().toISOString(),
+      challenge,
     }
     await store.saveAccount(account)
     onClose()
@@ -108,6 +125,38 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
           </Field>
         </div>
 
+        <fieldset className="fieldset form-stack">
+          <legend className="field__label">{t('accounts.challenge')}</legend>
+          <label className="toggle-row">
+            <input type="checkbox" checked={challengeOn} onChange={(event) => setChallengeOn(event.target.checked)} />
+            <span>
+              {t('accounts.challengeToggle')}
+              <span className="caption toggle-row__hint">{t('accounts.challengeHint')}</span>
+            </span>
+          </label>
+          {challengeOn && (
+            <>
+              <div className="form-grid">
+                <Field label={t('accounts.challengeTarget')} htmlFor={ids.target} error={errors.target} hint={t('accounts.challengeTargetHint')}>
+                  <input id={ids.target} className="input numeric" inputMode="decimal" value={rules.target} onChange={(event) => setRule('target')(event.target.value)} />
+                </Field>
+                <Field label={t('accounts.challengeDays')} htmlFor={ids.days} error={errors.days} hint={t('accounts.optional')}>
+                  <input id={ids.days} className="input numeric" inputMode="numeric" value={rules.days} onChange={(event) => setRule('days')(event.target.value)} />
+                </Field>
+                <Field label={t('accounts.challengeDaily')} htmlFor={ids.daily} error={errors.daily}>
+                  <input id={ids.daily} className="input numeric" inputMode="decimal" value={rules.daily} onChange={(event) => setRule('daily')(event.target.value)} />
+                </Field>
+                <Field label={t('accounts.challengeMax')} htmlFor={ids.maxLoss} error={errors.maxLoss}>
+                  <input id={ids.maxLoss} className="input numeric" inputMode="decimal" value={rules.maxLoss} onChange={(event) => setRule('maxLoss')(event.target.value)} />
+                </Field>
+              </div>
+              <Field label={t('accounts.challengeStart')} htmlFor={ids.start} error={errors.start}>
+                <input id={ids.start} className="input" type="date" value={rules.start} onChange={(event) => setRule('start')(event.target.value)} />
+              </Field>
+            </>
+          )}
+        </fieldset>
+
         <fieldset className="fieldset">
           <legend className="field__label">{t('accounts.color')}</legend>
           <div className="color-picker">
@@ -127,6 +176,17 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
       </form>
     </Sheet>
   )
+}
+
+/** The challenge rules as the form's text fields. */
+function challengeFields(rules: PropChallenge) {
+  return {
+    target: rules.profitTargetPct ?? '',
+    daily: rules.dailyLossPct ?? '',
+    maxLoss: rules.maxLossPct ?? '',
+    days: rules.minTradingDays ? String(rules.minTradingDays) : '',
+    start: rules.startDate,
+  }
 }
 
 /** A second account on the free plan: what Pro gives instead of the form. */

@@ -889,3 +889,48 @@
 .focus-card__status--clean {
   color: var(--color-profit);
 }
+
+/* Today: prop firm challenge */
+
+.challenge-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin-top: var(--space-s);
+}
+
+.challenge-card__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.challenge-card__label > svg {
+  color: var(--color-accent);
+}
+
+.challenge-card__balance {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-s);
+  font-size: var(--text-headline);
+  font-weight: 500;
+}
+
+.challenge-card__state {
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-field);
+  font-weight: 600;
+}
+
+.challenge-card__state--failed {
+  background: color-mix(in srgb, var(--color-loss) 8%, var(--color-surface));
+  color: var(--color-loss);
+}
+
+.challenge-card__state--passed,
+.challenge-card__state--active {
+  background: color-mix(in srgb, var(--color-profit) 8%, var(--color-surface));
+  color: var(--color-profit);
+}
