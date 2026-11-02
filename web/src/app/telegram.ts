@@ -8,7 +8,7 @@ import type { Locale } from '../i18n/i18n'
  * Whether the bot is set up (docs/telegram.md): its secrets, the database table and the hourly
  * job. Until then Profile hides the section; ?telegram=preview shows it in one tab for testing.
  */
-export const TELEGRAM_READY = false
+export const TELEGRAM_READY = true
 
 export function telegramShown(): boolean {
   return TELEGRAM_READY || new URLSearchParams(window.location.search).get('telegram') === 'preview'
