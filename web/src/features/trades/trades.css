@@ -645,3 +645,147 @@ a.button {
   color: var(--color-accent);
   font-weight: 600;
 }
+
+/* Trade detail: price chart */
+
+.trade-chart,
+.trade-chart__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.trade-chart > .button {
+  align-self: flex-start;
+}
+
+.trade-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: pan-y;
+}
+
+.trade-chart__grid line {
+  stroke: var(--color-separator);
+  stroke-width: 1;
+}
+
+.trade-chart__grid text,
+.trade-chart__time,
+.trade-chart__level text {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.trade-chart__span {
+  fill: var(--color-accent);
+  opacity: 0.08;
+}
+
+.trade-chart__candle line {
+  stroke: var(--color-text-secondary);
+  stroke-width: 1;
+}
+
+.trade-chart__candle rect {
+  fill: var(--color-text-secondary);
+  stroke: var(--color-text-secondary);
+  stroke-width: 1;
+}
+
+/* Rising candles hollow, falling ones filled: profit and loss colors stay for the trade's result. */
+.trade-chart__candle--up rect {
+  fill: var(--color-surface);
+}
+
+.trade-chart__candle--hover line,
+.trade-chart__candle--hover rect {
+  stroke: var(--color-text-primary);
+}
+
+.trade-chart__level line {
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.trade-chart__level--entry line {
+  stroke: var(--color-accent);
+  stroke-dasharray: none;
+}
+
+.trade-chart__level--stop line {
+  stroke: var(--color-loss);
+}
+
+.trade-chart__level--target line {
+  stroke: var(--color-profit);
+}
+
+.trade-chart__level--faint {
+  opacity: 0.5;
+}
+
+.trade-chart__marker {
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+.trade-chart__marker--entry,
+.trade-chart__key--entry {
+  fill: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.trade-chart__marker--profit,
+.trade-chart__key--profit {
+  fill: var(--color-profit);
+  background: var(--color-profit);
+}
+
+.trade-chart__marker--loss,
+.trade-chart__key--loss,
+.trade-chart__key--stop {
+  fill: var(--color-loss);
+  background: var(--color-loss);
+}
+
+.trade-chart__marker--neutral,
+.trade-chart__key--neutral {
+  fill: var(--color-text-secondary);
+  background: var(--color-text-secondary);
+}
+
+.trade-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-m);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trade-chart__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.trade-chart__key {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.trade-chart__readout {
+  min-height: 1.5em;
+}
+
+.trade-chart__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+}

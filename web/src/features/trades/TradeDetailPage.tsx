@@ -12,6 +12,7 @@ import { Button, Card, Chip, EmptyState, PnLText, SectionHeader } from '../../de
 import { formatDateTime, formatDecimal, formatDuration, formatMoney, formatPercent, formatR, formatTime } from '../../i18n/format'
 import { useI18n, type Translator } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
+import { TradeChart } from './TradeChart'
 import { TradeGallery } from '../images/TradeImages'
 import { EMOTION_ICONS } from './TradeRow'
 import { StarRating } from './StarRating'
@@ -133,6 +134,8 @@ export function TradeDetail({ trade, onDeleted, onDuplicated }: { trade: Trade; 
           {percent && <Stat label={t('trade.percentOfDeposit')} value={formatPercent(percent, locale)} />}
         </dl>
       </Card>
+
+      <TradeChart trade={trade} />
 
       {images.length > 0 && <TradeGallery images={images} />}
 

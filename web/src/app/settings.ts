@@ -28,6 +28,8 @@ export interface Settings {
   calculatorRisk?: { mode: 'percent' | 'amount'; value: string }
   /** The trader turned on Investing.com's calendar on Today (it loads a third-party frame). */
   economicCalendar?: boolean
+  /** The trader turned on price charts of crypto trades (candles load from Binance's public data). */
+  tradeCharts?: boolean
   /** Ids of the bell's notices already seen (core/notices). */
   seenNotices?: string[]
 }
