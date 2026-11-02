@@ -23,7 +23,8 @@ create table if not exists public.telegram_links (
 
 alter table public.telegram_links enable row level security;
 
--- The job's key lives in the vault, not in the job's text.
+-- The job's key lives in the vault, not in the job's text. Running again replaces it.
+delete from vault.secrets where name = 'telegram_cron_secret';
 select vault.create_secret('PASTE_TELEGRAM_CRON_SECRET', 'telegram_cron_secret');
 
 -- Every hour at :05, ask telegram-digest to send whatever summaries are due.

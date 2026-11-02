@@ -33,6 +33,7 @@ Full product spec: docs/SPEC.md. Read the relevant section before every task.
 - Prices come from RevenueCat Offerings, never hardcoded
 
 ## Workflow
+- When the owner has to run something (SQL, commands, config), paste the full code in the chat, ready to copy; don't only point to a file in the repo
 - Work one stage of docs/SPEC.md section 11 at a time
 - Before coding, write a short plan and list files you will touch
 - After coding: build, run tests, fix all warnings
