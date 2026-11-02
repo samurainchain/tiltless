@@ -1,5 +1,5 @@
 import Big from 'big.js'
-import { ArrowRight, Camera, ChartColumn, Check, ListChecks, Scale, ShieldCheck, Sparkles, Timer } from 'lucide-react'
+import { ArrowRight, Bitcoin, Camera, ChartColumn, Check, ListChecks, Scale, ShieldCheck, Sparkles, Sprout, Timer, Trophy } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { DEFAULT_CRYPTO_PRICES, fetchCryptoPrices } from '../../app/billing'
 import { updateSettings } from '../../app/settings'
@@ -33,7 +33,7 @@ const DEMO_EMOTIONS: { key: MessageKey; pnl: string }[] = [
 
 const AUTO_FLAGS: MessageKey[] = ['mistake.revengeTrading', 'mistake.noStop', 'mistake.heldPastStop', 'mistake.badHour', 'mistake.overtrading', 'mistake.highLeverage']
 const EXCHANGES = ['Binance', 'Bybit', 'OKX', 'BingX', 'TradingView']
-const FAQ = ['data', 'api', 'markets', 'pay', 'after', 'iphone'] as const
+const FAQ = ['data', 'api', 'markets', 'prop', 'pay', 'after', 'iphone'] as const
 
 export function LandingPage({ onStart }: { onStart: () => void }) {
   const { t, locale } = useI18n()
@@ -210,6 +210,16 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
             <Feature icon={<ShieldCheck size={20} />} title={t('landing.f.rules.title')} text={t('landing.f.rules.text')} />
             <Feature icon={<ListChecks size={20} />} title={t('landing.f.review.title')} text={t('landing.f.review.text')} />
             <Feature icon={<Timer size={20} />} title={t('landing.f.markets.title')} text={t('landing.f.markets.text')} />
+          </div>
+        </section>
+
+        <section className="landing__section" id="landing-who">
+          <p className="landing__eyebrow">{t('landing.who.eyebrow')}</p>
+          <h2>{t('landing.who.title')}</h2>
+          <div className="landing__grid landing__grid--3">
+            <Feature icon={<Bitcoin size={20} />} title={t('landing.who.crypto.title')} text={t('landing.who.crypto.text')} />
+            <Feature icon={<Trophy size={20} />} title={t('landing.who.prop.title')} text={t('landing.who.prop.text')} />
+            <Feature icon={<Sprout size={20} />} title={t('landing.who.new.title')} text={t('landing.who.new.text')} />
           </div>
         </section>
 
