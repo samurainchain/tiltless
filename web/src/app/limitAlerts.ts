@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { dayLimits, shouldAlert } from '../core/limits'
+import { dayLimits, effectiveLimits, shouldAlert } from '../core/limits'
 import { realTrades } from '../core/models'
 import { localDayKey } from '../core/stats'
 import { useI18n } from '../i18n/i18n'
@@ -50,11 +50,11 @@ export function useLimitAlerts(): void {
   useEffect(() => {
     if (status !== 'ready' || !profile.limitAlerts) return
     const now = new Date()
-    const limits = dayLimits(trades, profile, now)
+    const limits = dayLimits(trades, effectiveLimits(profile, accounts), now)
     if (!shouldAlert(limits, readLastAlert(), now)) return
     writeLastAlert(localDayKey(now))
     if (notificationPermission() === 'granted') {
       new Notification(t('limits.alertTitle'), { body: t('limits.alertBody'), tag: 'tiltless-limit' })
     }
-  }, [trades, profile, status, t])
+  }, [trades, accounts, profile, status, t])
 }

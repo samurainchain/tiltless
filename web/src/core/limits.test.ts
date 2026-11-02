@@ -1,7 +1,7 @@
 import Big from 'big.js'
 import { describe, expect, it } from 'vitest'
-import { dayLimits, ruleStreak, shouldAlert } from './limits'
-import { defaultProfile, type JournalProfile, type MistakeTag, type Trade } from './models'
+import { dayLimits, effectiveLimits, ruleStreak, shouldAlert, totalDeposit } from './limits'
+import { defaultProfile, type Account, type JournalProfile, type MistakeTag, type Trade } from './models'
 import { defaultReviewWeek, weekSummary } from './review'
 
 let sequence = 0
@@ -152,5 +152,29 @@ describe('defaultReviewWeek', () => {
     expect(defaultReviewWeek(new Date(2026, 10, 1, 19), 1)).toEqual(new Date(2026, 9, 26)) // Sunday, Monday-start weeks
     expect(defaultReviewWeek(new Date(2026, 10, 1, 19), 0)).toEqual(new Date(2026, 9, 25)) // Sunday, Sunday-start weeks
     expect(defaultReviewWeek(new Date(2026, 9, 28), 1)).toEqual(new Date(2026, 9, 26))
+  })
+})
+
+describe('loss limit in % of the deposit', () => {
+  const account = (depositAmount?: string, extra: Partial<Account> = {}) => ({ depositAmount, isArchived: false, ...extra }) as Account
+
+  it('sums the deposits of active real accounts', () => {
+    const accounts = [account('5000'), account('3000'), account('9000', { isDemo: true }), account('1000', { isArchived: true }), account()]
+    expect(totalDeposit(accounts)?.toString()).toBe('8000')
+    expect(totalDeposit([account()])).toBeUndefined()
+  })
+
+  it('turns a % limit into money', () => {
+    const profile = limits({ dailyLossUnit: 'percent', dailyLossPercent: '2.5', dailyLossLimit: '999' })
+    expect(effectiveLimits(profile, [account('8000')]).dailyLossLimit).toBe('200')
+    expect(effectiveLimits(profile, [account()]).dailyLossLimit).toBeUndefined()
+    const result = dayLimits([trade('-150', at(28, 10))], effectiveLimits(profile, [account('8000')]), NOW)
+    expect(result.loss?.level).toBe('ok')
+    expect(result.loss?.limit.toString()).toBe('200')
+  })
+
+  it('keeps a money limit as it is', () => {
+    const profile = limits({ dailyLossLimit: '300', dailyLossPercent: '5' })
+    expect(effectiveLimits(profile, [account('8000')])).toBe(profile)
   })
 })

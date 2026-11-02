@@ -227,6 +227,10 @@ export interface JournalProfile {
   id: typeof PROFILE_ID
   /** Daily loss limit in money, across all accounts. */
   dailyLossLimit?: DecimalString
+  /** How the daily loss limit is set: in money (default) or as a % of the accounts' deposits. */
+  dailyLossUnit?: 'money' | 'percent'
+  /** Daily loss limit as a % of the deposits of the active real accounts. */
+  dailyLossPercent?: DecimalString
   /** Maximum closed trades per day, across all accounts. */
   dailyTradeLimit?: number
   /** Notify when a limit is reached (at most once a day). */

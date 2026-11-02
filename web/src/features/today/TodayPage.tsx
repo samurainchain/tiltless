@@ -4,7 +4,7 @@ import { activeAccounts, useJournal, useMistakeName } from '../../app/journal'
 import { routeHref } from '../../app/router'
 import { useWeekStart } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
-import { dayLimits, ruleStreak } from '../../core/limits'
+import { dayLimits, effectiveLimits, ruleStreak } from '../../core/limits'
 import { defaultReviewWeek } from '../../core/review'
 import { totalPnl } from '../../core/pnl'
 import { realTrades } from '../../core/models'
@@ -42,8 +42,9 @@ export function TodayPage() {
   const closedCount = todayTrades.filter((trade) => trade.exitPrice !== undefined).length
   const weekMistake = mistakeOfTheWeek(closedTrades(trades), mistakes, today)
   // Limits and the streak cover all accounts: tilt is about the trader's day.
-  const limits = dayLimits(allTrades, profile, today)
-  const streak = ruleStreak(allTrades, profile, today)
+  const limitProfile = effectiveLimits(profile, accounts)
+  const limits = dayLimits(allTrades, limitProfile, today)
+  const streak = ruleStreak(allTrades, limitProfile, today)
   const reviewWeek = localDayKey(defaultReviewWeek(today, weekStart))
   const reviewDue = today.getDay() === profile.reviewWeekday && !reviews.some((review) => review.weekStart === reviewWeek)
 

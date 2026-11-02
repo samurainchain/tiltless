@@ -4,6 +4,7 @@ import { useAutoFlags, useJournal } from '../../app/journal'
 import { routeHref, type Route } from '../../app/router'
 import { ACCENTS, updateSettings, useSettings, useWeekStart, type LanguageSetting, type ThemeSetting } from '../../app/settings'
 import { useCloud } from '../../app/cloud'
+import { effectiveLimits } from '../../core/limits'
 import { realTrades } from '../../core/models'
 import { markSeen, notices, unseenCount, type Notice, type NoticeKind } from '../../core/notices'
 import { useI18n } from '../../i18n/i18n'
@@ -112,8 +113,8 @@ function NoticeBell() {
   const access = useAccess()
   const reviewsOpen = canUse('weeklyReview', access)
   const list = useMemo(
-    () => notices({ trades, profile, reviews, checkins, autoFlags, now: new Date(), weekStart }).filter((notice) => reviewsOpen || notice.kind !== 'reviewDue'),
-    [trades, profile, reviews, checkins, autoFlags, weekStart, reviewsOpen],
+    () => notices({ trades, profile: effectiveLimits(profile, accounts), reviews, checkins, autoFlags, now: new Date(), weekStart }).filter((notice) => reviewsOpen || notice.kind !== 'reviewDue'),
+    [trades, profile, accounts, reviews, checkins, autoFlags, weekStart, reviewsOpen],
   )
   const unseen = unseenCount(seen, list)
 

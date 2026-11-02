@@ -1,5 +1,5 @@
 import Big from 'big.js'
-import type { JournalProfile, Trade } from './models'
+import type { Account, JournalProfile, Trade } from './models'
 import { closedTrades, localDayKey, type ClosedTrade } from './stats'
 
 // Anti-tilt (SPEC section 6): daily limits, alerts and the rule streak. Limits apply to all
@@ -39,6 +39,24 @@ function dayTrades(trades: readonly ClosedTrade[], day: string): ClosedTrade[] {
 function netLoss(trades: readonly ClosedTrade[]): Big {
   const pnl = trades.reduce((total, item) => total.plus(item.pnl), new Big(0))
   return pnl.lt(0) ? pnl.abs() : new Big(0)
+}
+
+/** Sum of the deposits of active real accounts, or undefined when none has a deposit. */
+export function totalDeposit(accounts: readonly Account[]): Big | undefined {
+  const deposits = accounts.filter((account) => !account.isArchived && !account.isDemo && account.depositAmount).map((account) => new Big(account.depositAmount!))
+  return deposits.length ? deposits.reduce((sum, value) => sum.plus(value), new Big(0)) : undefined
+}
+
+/**
+ * The profile with the daily loss limit in money, converting a limit set as a % of the
+ * deposits. Without any deposit a % limit can't be measured and is left out.
+ */
+export function effectiveLimits(profile: JournalProfile, accounts: readonly Account[]): JournalProfile {
+  if (profile.dailyLossUnit !== 'percent') return profile
+  const deposit = totalDeposit(accounts)
+  const percent = profile.dailyLossPercent ? new Big(profile.dailyLossPercent) : undefined
+  const amount = deposit && percent?.gt(0) ? deposit.times(percent).div(100).round(2).toString() : undefined
+  return { ...profile, dailyLossLimit: amount }
 }
 
 export function dayLimits(trades: readonly Trade[], profile: JournalProfile, now: Date): DayLimits {

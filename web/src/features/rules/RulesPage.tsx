@@ -6,8 +6,10 @@ import { routeHref } from '../../app/router'
 import { parsePositive } from '../../core/decimal'
 import { DEFAULT_REVENGE_MINUTES } from '../../core/mistakeDetector'
 import type { Rule } from '../../core/models'
-import { Button, Card, Field, SectionHeader } from '../../design/components'
-import { weekdayNames } from '../../i18n/format'
+import { Button, Card, Field, SectionHeader, Segmented } from '../../design/components'
+import { totalDeposit } from '../../core/limits'
+import { formatMoney, weekdayNames } from '../../i18n/format'
+import { totalsCurrency } from '../trades/tradeQueries'
 import { useI18n } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
 
@@ -15,22 +17,42 @@ import { PageHeader } from '../shell/PageHeader'
 export function RulesPage() {
   const { t, locale } = useI18n()
   const store = useStore()
-  const { profile, rules } = useJournal()
+  const { profile, rules, accounts } = useJournal()
   const ids = { loss: useId(), trades: useId(), weekday: useId(), newRule: useId(), revenge: useId() }
-  const [lossLimit, setLossLimit] = useState(profile.dailyLossLimit ?? '')
+  const percentMode = profile.dailyLossUnit === 'percent'
+  const [lossLimit, setLossLimit] = useState((percentMode ? profile.dailyLossPercent : profile.dailyLossLimit) ?? '')
   const [tradeLimit, setTradeLimit] = useState(profile.dailyTradeLimit ? String(profile.dailyTradeLimit) : '')
   const [revengeMinutes, setRevengeMinutes] = useState(String(profile.revengeMinutes ?? DEFAULT_REVENGE_MINUTES))
   const [errors, setErrors] = useState<{ loss?: string; trades?: string; revenge?: string }>({})
   const [permission, setPermission] = useState(notificationPermission())
   const [newRule, setNewRule] = useState('')
 
+  const field = percentMode ? 'dailyLossPercent' : 'dailyLossLimit'
   const saveLossLimit = () => {
-    if (!lossLimit.trim()) return void store.updateProfile({ dailyLossLimit: undefined }).then(() => setErrors((e) => ({ ...e, loss: undefined })))
+    if (!lossLimit.trim()) return void store.updateProfile({ [field]: undefined }).then(() => setErrors((e) => ({ ...e, loss: undefined })))
     const value = parsePositive(lossLimit)
-    if (!value) return setErrors((e) => ({ ...e, loss: t('entry.error.price') }))
+    if (!value || (percentMode && Number(value) > 100)) return setErrors((e) => ({ ...e, loss: t(percentMode ? 'limits.error.percent' : 'entry.error.price') }))
     setErrors((e) => ({ ...e, loss: undefined }))
-    void store.updateProfile({ dailyLossLimit: value })
+    void store.updateProfile({ [field]: value })
   }
+
+  /** Switches between money and %, keeping each unit's own value. */
+  const changeUnit = (unit: 'money' | 'percent') => {
+    setErrors((e) => ({ ...e, loss: undefined }))
+    setLossLimit((unit === 'percent' ? profile.dailyLossPercent : profile.dailyLossLimit) ?? '')
+    void store.updateProfile({ dailyLossUnit: unit })
+  }
+
+  const deposit = totalDeposit(accounts)
+  const currency = totalsCurrency(undefined, accounts.filter((account) => !account.isDemo))
+  const percentValue = parsePositive(lossLimit)
+  const lossHint = !percentMode
+    ? t('limits.lossHint')
+    : !deposit
+      ? t('limits.percentNoDeposit')
+      : percentValue
+        ? t('limits.percentHint', { amount: formatMoney(deposit.times(percentValue).div(100), currency, locale, false), deposit: formatMoney(deposit, currency, locale, false) })
+        : t('limits.percentDeposit', { deposit: formatMoney(deposit, currency, locale, false) })
 
   const saveTradeLimit = () => {
     if (!tradeLimit.trim()) return void store.updateProfile({ dailyTradeLimit: undefined }).then(() => setErrors((e) => ({ ...e, trades: undefined })))
@@ -85,8 +107,19 @@ export function RulesPage() {
       <Card className="form-stack">
         <p className="secondary-text">{t('limits.dailyNote')}</p>
         <div className="form-grid">
-          <Field label={t('limits.loss')} htmlFor={ids.loss} error={errors.loss} hint={t('limits.lossHint')}>
-            <input id={ids.loss} className="input numeric" inputMode="decimal" placeholder="300" value={lossLimit} onChange={(event) => setLossLimit(event.target.value)} onBlur={saveLossLimit} />
+          <Field label={t('limits.loss')} htmlFor={ids.loss} error={errors.loss} hint={lossHint}>
+            <div className="input-with-addon">
+              <input id={ids.loss} className="input numeric" inputMode="decimal" placeholder={percentMode ? '3' : '300'} value={lossLimit} onChange={(event) => setLossLimit(event.target.value)} onBlur={saveLossLimit} />
+              <Segmented
+                label={t('limits.lossUnit')}
+                value={percentMode ? 'percent' : 'money'}
+                onChange={changeUnit}
+                options={[
+                  { value: 'money', label: '$' },
+                  { value: 'percent', label: '%' },
+                ]}
+              />
+            </div>
           </Field>
           <Field label={t('limits.trades')} htmlFor={ids.trades} error={errors.trades}>
             <input id={ids.trades} className="input numeric" inputMode="numeric" placeholder="6" value={tradeLimit} onChange={(event) => setTradeLimit(event.target.value)} onBlur={saveTradeLimit} />
