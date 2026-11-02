@@ -1,5 +1,5 @@
 import { Target } from 'lucide-react'
-import { useJournal, useMistakeName } from '../../app/journal'
+import { useFlaggedTrades, useJournal, useMistakeName } from '../../app/journal'
 import { useWeekStart } from '../../app/settings'
 import { activeFocus, focusProgress } from '../../core/focus'
 import { realTrades, type Currency } from '../../core/models'
@@ -13,8 +13,9 @@ import { useI18n } from '../../i18n/i18n'
  */
 export function FocusCard({ currency }: { currency: Currency }) {
   const { t, tp, locale } = useI18n()
-  const { reviews, mistakes, trades: stored, accounts } = useJournal()
-  const trades = realTrades(stored, accounts)
+  const { reviews, mistakes, accounts } = useJournal()
+  // With the automatic flags merged in: a revenge trade counts even when nobody tagged it.
+  const trades = realTrades(useFlaggedTrades(), accounts)
   const mistakeName = useMistakeName()
   const weekStart = useWeekStart()
   const now = new Date()

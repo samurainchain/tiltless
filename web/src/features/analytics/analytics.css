@@ -934,3 +934,38 @@
   background: color-mix(in srgb, var(--color-profit) 8%, var(--color-surface));
   color: var(--color-profit);
 }
+
+/* Today: the brief before the first trade */
+
+.brief-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin-top: var(--space-s);
+}
+
+.brief-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.brief-card__line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-s);
+}
+
+.brief-card__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-accent);
+}
+
+.brief-card__rule-label {
+  font-weight: 600;
+}
