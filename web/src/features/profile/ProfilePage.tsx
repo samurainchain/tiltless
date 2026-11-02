@@ -12,6 +12,8 @@ import { useInstall } from '../../app/install'
 import { useAccess } from '../../app/entitlement'
 import { canUse } from '../../core/entitlements'
 import { CloudSection } from '../cloud/CloudSection'
+import { TelegramSection } from './TelegramSection'
+import { telegramShown } from '../../app/telegram'
 import { FeedbackSection } from '../feedback/FeedbackSection'
 import { AccentPicker } from '../shell/AppBar'
 import { PageHeader } from '../shell/PageHeader'
@@ -150,6 +152,12 @@ export function ProfilePage() {
         <>
           <SectionHeader title={t('cloud.section')} />
           <CloudSection />
+          {telegramShown() && (
+            <>
+              <SectionHeader title="Telegram" />
+              <TelegramSection />
+            </>
+          )}
         </>
       )}
 

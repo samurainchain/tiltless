@@ -21,3 +21,14 @@ verify_jwt = false
 
 [functions.crypto-webhook]
 verify_jwt = false
+
+# Telegram: the app's calls carry the user's token (checked in the function), Telegram's carry
+# the webhook secret header and the hourly job the cron secret header.
+[functions.telegram-account]
+verify_jwt = false
+
+[functions.telegram-webhook]
+verify_jwt = false
+
+[functions.telegram-digest]
+verify_jwt = false

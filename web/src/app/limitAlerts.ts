@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { dayLimits, effectiveLimits, shouldAlert } from '../core/limits'
 import { realTrades } from '../core/models'
+import { useCloud } from './cloud'
+import { telegramLimitReached, telegramShown } from './telegram'
 import { localDayKey } from '../core/stats'
 import { useI18n } from '../i18n/i18n'
 import { useJournal } from './journal'
@@ -46,6 +48,8 @@ export function useLimitAlerts(): void {
   const { trades: stored, accounts, profile, status } = useJournal()
   const trades = realTrades(stored, accounts)
   const { t } = useI18n()
+  const { cloud, state: cloudState } = useCloud()
+  const signedIn = Boolean(cloud.supabase && cloudState.email)
 
   useEffect(() => {
     if (status !== 'ready' || !profile.limitAlerts) return
@@ -56,5 +60,7 @@ export function useLimitAlerts(): void {
     if (notificationPermission() === 'granted') {
       new Notification(t('limits.alertTitle'), { body: t('limits.alertBody'), tag: 'tiltless-limit' })
     }
-  }, [trades, accounts, profile, status, t])
+    // Also in Telegram when linked; the server sends at most one a day across devices.
+    if (signedIn && cloud.supabase && telegramShown()) void telegramLimitReached(cloud.supabase).catch(() => undefined)
+  }, [trades, accounts, profile, status, t, signedIn, cloud])
 }

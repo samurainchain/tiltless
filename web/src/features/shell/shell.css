@@ -1522,3 +1522,22 @@
   justify-content: flex-end;
   gap: var(--space-s);
 }
+
+/* Profile: Telegram */
+
+.telegram > .button,
+.telegram__open {
+  align-self: flex-start;
+}
+
+.telegram__open {
+  text-decoration: none;
+}
+
+.telegram__state {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-weight: 600;
+  color: var(--color-accent);
+}

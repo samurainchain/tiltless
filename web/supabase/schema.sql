@@ -388,3 +388,27 @@ grant execute on function public.become_partner() to authenticated;
 grant execute on function public.set_payout_wallet(text) to authenticated;
 grant execute on function public.claim_referral(text) to authenticated;
 grant execute on function public.partner_stats() to authenticated;
+
+-- Telegram (SPEC section 4.10): which chat gets a trader's summaries and alerts. Written only by
+-- the telegram-* functions with the service role; no policies, so the app can't read other rows.
+create table if not exists public.telegram_links (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  chat_id bigint unique,
+  -- One-time code from "Connect", sent back by Telegram as /start <code>.
+  link_code text unique,
+  link_code_expires_at timestamptz,
+  time_zone text not null default 'UTC',
+  language text not null default 'en' check (language in ('en', 'ru', 'es')),
+  daily_summary boolean not null default true,
+  limit_alerts boolean not null default true,
+  review_reminder boolean not null default true,
+  -- Local days already messaged, so the hourly job and several devices send once.
+  last_daily_sent date,
+  last_review_sent date,
+  last_limit_sent date,
+  linked_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+alter table public.telegram_links enable row level security;
+-- The hourly job that sends summaries is set up once by docs/migrations/2026-11-02-telegram.sql.

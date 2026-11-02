@@ -8,7 +8,7 @@ import { DEFAULT_REVENGE_MINUTES } from '../../core/mistakeDetector'
 import type { Rule } from '../../core/models'
 import { Button, Card, Field, SectionHeader, Segmented } from '../../design/components'
 import { totalDeposit } from '../../core/limits'
-import { formatMoney, weekdayNames } from '../../i18n/format'
+import { formatDecimal, formatMoney, weekdayNames } from '../../i18n/format'
 import { totalsCurrency } from '../trades/tradeQueries'
 import { useI18n } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
@@ -51,7 +51,7 @@ export function RulesPage() {
     : !deposit
       ? t('limits.percentNoDeposit')
       : percentValue
-        ? t('limits.percentHint', { amount: formatMoney(deposit.times(percentValue).div(100), currency, locale, false), deposit: formatMoney(deposit, currency, locale, false) })
+        ? t('limits.percentHint', { percent: formatDecimal(percentValue, locale), amount: formatMoney(deposit.times(percentValue).div(100), currency, locale, false), deposit: formatMoney(deposit, currency, locale, false) })
         : t('limits.percentDeposit', { deposit: formatMoney(deposit, currency, locale, false) })
 
   const saveTradeLimit = () => {
