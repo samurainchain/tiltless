@@ -24,6 +24,7 @@ import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
 import { CheckInResults } from '../checkin/CheckInResults'
 import { EconomicCalendar } from '../calendar/EconomicCalendar'
+import { LiquidationMap } from '../market/LiquidationMap'
 import { SessionResults } from '../sessions/SessionResults'
 import { EMOTION_ICONS } from '../trades/TradeRow'
 import { ColumnChart, CostBarList, EquityCurve, SignedBarList } from './charts'
@@ -48,6 +49,7 @@ export const WIDGETS: Record<WidgetId, { title: MessageKey; needsTrades: boolean
   byEmotion: { title: 'analytics.byEmotion', needsTrades: true },
   calendar: { title: 'analytics.calendar', needsTrades: false },
   econCalendar: { title: 'calendar.title', needsTrades: false },
+  liquidations: { title: 'liq.title', needsTrades: false },
   sessions: { title: 'analytics.bySession', needsTrades: true },
   checkins: { title: 'analytics.checkins', needsTrades: true },
   byWeekday: { title: 'analytics.byWeekday', needsTrades: true },
@@ -81,6 +83,8 @@ export const WidgetBody = memo(function WidgetBody({ id, data }: { id: WidgetId;
       return <PnlCalendar trades={closed as ClosedTrade[]} currency={currency} />
     case 'econCalendar':
       return <EconomicCalendar />
+    case 'liquidations':
+      return <LiquidationMap />
     case 'sessions':
       return <SessionResults trades={inRange} currency={currency} />
     case 'checkins':

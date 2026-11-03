@@ -30,6 +30,8 @@ export interface Settings {
   economicCalendar?: boolean
   /** The trader turned on price charts of crypto trades (candles load from Binance's public data). */
   tradeCharts?: boolean
+  /** The liquidation map's coin and period. */
+  liquidationMap?: { coin: string; period: string }
   /** Ids of the bell's notices already seen (core/notices). */
   seenNotices?: string[]
 }

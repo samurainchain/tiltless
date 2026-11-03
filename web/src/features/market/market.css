@@ -1,0 +1,94 @@
+/* Analytics: the liquidation map */
+
+.liq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.liq__controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-s);
+}
+
+/* Narrow options: coins and periods are short labels. */
+.liq__controls .segmented {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 2.75rem), 1fr));
+}
+
+.liq__status {
+  min-height: 120px;
+}
+
+.liq__canvas {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-field);
+  touch-action: pan-y;
+}
+
+.liq__canvas canvas {
+  display: block;
+}
+
+.liq__readout {
+  min-height: 1.5em;
+}
+
+.liq__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.liq__ramp {
+  width: 120px;
+  height: 8px;
+  border-radius: var(--radius-tiny);
+  background: linear-gradient(90deg, var(--color-surface), var(--color-accent), color-mix(in srgb, var(--color-accent) 40%, var(--color-text-primary)));
+  border: 1px solid var(--color-separator);
+}
+
+.liq__time {
+  margin-left: auto;
+}
+
+.liq__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.liq__summary li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.liq__arrow {
+  color: var(--color-text-secondary);
+}
+
+.liq__help summary {
+  cursor: pointer;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.liq__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.liq__footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-hair);
+}

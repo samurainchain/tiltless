@@ -35,3 +35,7 @@ verify_jwt = false
 
 [functions.push-account]
 verify_jwt = false
+
+# Public market data for the liquidation map: no user involved.
+[functions.market-data]
+verify_jwt = false
