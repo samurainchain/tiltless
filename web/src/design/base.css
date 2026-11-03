@@ -50,6 +50,8 @@ a {
 
 .visually-hidden {
   position: absolute;
+  /* Pinned to the left: left in its own spot, a hidden box past the right edge widens the page. */
+  left: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;

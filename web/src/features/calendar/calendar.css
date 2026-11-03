@@ -34,8 +34,9 @@
 }
 
 .econ__event {
-  display: grid;
-  grid-template-columns: 2.75rem auto minmax(0, 1fr) auto;
+  /* Wraps instead of overflowing: with large text the title moves to its own line. */
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-s);
   padding: var(--space-s);
@@ -49,12 +50,14 @@
 }
 
 .econ__region {
+  flex: 0 0 2.75rem;
   font-family: var(--font-mono);
   font-weight: 600;
   text-align: center;
 }
 
 .econ__when {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -66,6 +69,7 @@
 }
 
 .econ__what {
+  flex: 1 1 12rem;
   display: flex;
   flex-direction: column;
   gap: var(--space-hair);
@@ -79,6 +83,8 @@
 
 /* Three marks for high impact, the only level the calendar shows. */
 .econ__impact {
+  flex: 0 0 auto;
+  margin-left: auto;
   display: inline-flex;
   gap: 3px;
 }
@@ -102,12 +108,10 @@
   gap: var(--space-hair);
 }
 
+/* Phones: every event here is high impact, so the marks and the region code make room for the title. */
 @media (max-width: 420px) {
-  .econ__event {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-  }
-
-  .econ__region {
+  .econ__region,
+  .econ__impact {
     display: none;
   }
 }
