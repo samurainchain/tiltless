@@ -48,7 +48,7 @@ export const MIN_WIDTH: Record<WidgetId, WidgetWidth> = {
   mistakeCost: 4,
   byEmotion: 4,
   calendar: 6,
-  econCalendar: 6,
+  econCalendar: 4,
   liquidations: 6,
   sessions: 4,
   checkins: 4,
@@ -71,8 +71,7 @@ const DEFAULT_ITEMS: LayoutItem[] = [
   { id: 'byEmotion', width: 6 },
   { id: 'calendar', width: 6 },
   { id: 'sessions', width: 6 },
-  // The Investing.com widget's table needs about 650px: two thirds of the row.
-  { id: 'econCalendar', width: 8 },
+  { id: 'econCalendar', width: 6 },
   { id: 'liquidations', width: 12 },
   { id: 'checkins', width: 4 },
   { id: 'byWeekday', width: 6 },

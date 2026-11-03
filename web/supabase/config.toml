@@ -39,3 +39,7 @@ verify_jwt = false
 # Public market data for the liquidation map: no user involved.
 [functions.market-data]
 verify_jwt = false
+
+# Public economic calendar: no user involved.
+[functions.econ-calendar]
+verify_jwt = false

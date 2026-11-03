@@ -1,7 +1,9 @@
-import { CalendarClock, History, Landmark, ScrollText, Timer } from 'lucide-react'
+import { CalendarClock, History, Landmark, Newspaper, ScrollText, Timer } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useFlaggedTrades, useJournal, useMistakeName } from '../../app/journal'
+import { useEconCalendar } from '../../app/econCalendar'
 import { briefIsEmpty, morningBrief } from '../../core/brief'
+import { eventsOnDay, regionOf } from '../../core/econCalendar'
 import { realTrades, type Currency } from '../../core/models'
 import { Card } from '../../design/components'
 import { formatMoney, formatTime, intlLocale } from '../../i18n/format'
@@ -19,7 +21,12 @@ export function BriefCard({ currency }: { currency: Currency }) {
   const mistakeName = useMistakeName()
   const now = new Date()
   const brief = morningBrief(trades, mistakes, rules, now)
-  if (briefIsEmpty(brief)) return null
+  const calendar = useEconCalendar()
+  // Today's high-impact releases still ahead (or within the hour); with the calendar loaded they
+  // replace the built-in list of Fed decisions, which the calendar also carries.
+  const releases = calendar ? eventsOnDay(calendar.events, now).filter((event) => event.at.getTime() >= now.getTime() - 3_600_000) : []
+  if (calendar) brief.fed = undefined
+  if (briefIsEmpty(brief) && releases.length === 0) return null
 
   const intl = intlLocale(locale)
   const money = (amount: Parameters<typeof formatMoney>[0]) => formatMoney(amount, currency, locale)
@@ -29,6 +36,17 @@ export function BriefCard({ currency }: { currency: Currency }) {
     <Card className="brief-card">
       <p className="caption">{t('brief.title')}</p>
       <ul className="brief-card__list">
+        {releases.length > 0 && (
+          <Line icon={<Newspaper size={18} />}>
+            {t('brief.releases', {
+              list: releases
+                .slice(0, 3)
+                .map((event) => `${formatTime(event.at.toISOString(), locale)} ${event.title} (${regionOf(event.country) ?? event.country})`)
+                .join(', '),
+            })}
+            {releases.length > 3 && <> {t('brief.releasesMore', { count: String(releases.length - 3) })}</>}
+          </Line>
+        )}
         {brief.fed && (
           <Line icon={<Landmark size={18} />}>
             {brief.fed.today
