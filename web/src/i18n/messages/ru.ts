@@ -616,6 +616,7 @@ export const ru: Messages = {
   'onboarding.insight.exampleLabel': 'Пример графика цены ошибок',
   'onboarding.insight.exampleNote': 'Твои цифры появятся, когда начнёшь записывать сделки и отмечать ошибки.',
   'onboarding.insight.accounts': 'Заведём такие счета, переименовать их можно позже:',
+  'onboarding.finishFailed': 'Не удалось сохранить ответы. Попробуй ещё раз.',
   'onboarding.notifications.title': 'Подскажем, когда пора остановиться',
   'onboarding.notifications.text': 'Когда дневной лимит убытка или сделок исчерпан, Tiltless может показать уведомление «Сделай паузу». Уведомления работают, пока сайт открыт.',
   'onboarding.notifications.allow': 'Разрешить уведомления',

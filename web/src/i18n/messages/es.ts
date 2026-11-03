@@ -614,6 +614,7 @@ export const es: Messages = {
   'onboarding.insight.exampleLabel': 'Ejemplo del gráfico de costo de errores',
   'onboarding.insight.exampleNote': 'Tus propios números aparecerán al registrar operaciones y marcar errores.',
   'onboarding.insight.accounts': 'Crearemos estas cuentas; puedes renombrarlas después:',
+  'onboarding.finishFailed': 'No se pudieron guardar tus respuestas. Intenta otra vez.',
   'onboarding.notifications.title': 'Un aviso cuando toca parar',
   'onboarding.notifications.text': 'Al llegar a tu límite diario de pérdida u operaciones, Tiltless puede mostrar un aviso para tomar una pausa. Funciona mientras el sitio está abierto.',
   'onboarding.notifications.allow': 'Permitir notificaciones',

@@ -615,6 +615,7 @@ export const en = {
   'onboarding.insight.exampleLabel': 'An example of the cost of mistakes chart',
   'onboarding.insight.exampleNote': 'Your own numbers appear as you log trades and tag mistakes.',
   'onboarding.insight.accounts': 'We’ll set up these accounts; you can rename them later:',
+  'onboarding.finishFailed': 'Couldn’t save your answers. Try again.',
   'onboarding.notifications.title': 'A nudge when it’s time to stop',
   'onboarding.notifications.text': 'When you hit your daily loss or trade limit, Tiltless can show a notification to take a break. Notifications work while the site is open.',
   'onboarding.notifications.allow': 'Allow notifications',

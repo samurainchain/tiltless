@@ -54,6 +54,7 @@ export function OnboardingFlow() {
   const backupInput = useRef<HTMLInputElement>(null)
   const { state: cloudState } = useCloud()
   const [signingIn, setSigningIn] = useState(false)
+  const [finishError, setFinishError] = useState(false)
 
   const index = STEPS.indexOf(step)
   const go = (offset: number) => setStep(STEPS[Math.min(STEPS.length - 1, Math.max(0, index + offset))]!)
@@ -72,9 +73,17 @@ export function OnboardingFlow() {
 
   const finish = async (allowNotifications: boolean) => {
     setFinishing(true)
-    if (allowNotifications) await requestNotificationPermission()
-    await store.completeOnboarding(answers, accountsFromAnswers(answers, accountNames(t)))
-    navigate({ name: 'today' })
+    // Not awaited: some browsers (Brave, Chrome's quiet prompts) keep the request pending until
+    // the trader answers a small icon in the address bar, and onboarding must not wait on it.
+    if (allowNotifications) void requestNotificationPermission().catch(() => undefined)
+    try {
+      await store.completeOnboarding(answers, accountsFromAnswers(answers, accountNames(t)))
+      navigate({ name: 'today' })
+    } catch (error) {
+      console.error('Finishing onboarding failed', error)
+      setFinishError(true)
+      setFinishing(false)
+    }
   }
 
   const restore = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -249,6 +258,11 @@ export function OnboardingFlow() {
             <Button variant="plain" disabled={finishing || !canContinue.notifications} onClick={() => void finish(false)}>
               {t('onboarding.notifications.later')}
             </Button>
+            {finishError && (
+              <p className="caption field__error" role="alert">
+                {t('onboarding.finishFailed')}
+              </p>
+            )}
           </>
         )}
       </footer>
