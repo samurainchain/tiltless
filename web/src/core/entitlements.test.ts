@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { WIDGET_IDS } from './dashboard'
-import { canAddAccount, canUse, launchOfferOn, periodUnlocked, PRO_FEATURES, proActive, trialDays, widgetUnlocked } from './entitlements'
+import { canAddAccount, canUse, countRead, FREE_SCREENSHOT_READS, freeReadsLeft, launchOfferOn, periodUnlocked, PRO_FEATURES, proActive, trialDays, widgetUnlocked } from './entitlements'
 
 const open = { gated: false, pro: false }
 const free = { gated: true, pro: false }
@@ -41,5 +41,18 @@ describe('launch offer', () => {
     expect(trialDays(new Date('2026-12-01T07:59:00Z'))).toBe(30)
     expect(trialDays(new Date('2026-12-01T12:00:00Z'))).toBe(7)
     expect(launchOfferOn(new Date('2026-12-02T00:00:00Z'))).toBe(false)
+  })
+})
+
+describe('free screenshot reads', () => {
+  const now = new Date(2026, 10, 3)
+  it('gives five a month and starts over in a new month', () => {
+    expect(freeReadsLeft(undefined, now)).toBe(FREE_SCREENSHOT_READS)
+    let used = countRead(undefined, now)
+    expect(used).toEqual({ month: '2026-11', count: 1 })
+    for (let index = 0; index < 6; index += 1) used = countRead(used, now)
+    expect(freeReadsLeft(used, now)).toBe(0)
+    expect(freeReadsLeft(used, new Date(2026, 11, 1))).toBe(5)
+    expect(countRead(used, new Date(2026, 11, 1))).toEqual({ month: '2026-12', count: 1 })
   })
 })

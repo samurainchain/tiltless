@@ -246,7 +246,7 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
               <p className="landing__price numeric">{formatMoney(new Big(0), 'USD', locale, false).replace(/[.,]00(?=\D*$)/, '')}</p>
               <p className="caption">{t('landing.pricing.freeNote')}</p>
               <ul className="landing__list">
-                {(['journal', 'today', 'limits', 'tools', 'analytics', 'sync'] as const).map((item) => (
+                {(['journal', 'today', 'limits', 'tools', 'analytics', 'screenshots', 'sync'] as const).map((item) => (
                   <li key={item}>
                     <Check size={16} aria-hidden="true" />
                     {t(`proPage.free.${item}`)}

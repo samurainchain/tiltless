@@ -10,7 +10,7 @@ import { PageHeader } from '../shell/PageHeader'
 import { CryptoProSection } from './CryptoProSection'
 import { ProSection } from './ProSection'
 
-const FREE_ITEMS = ['journal', 'today', 'limits', 'tools', 'analytics', 'sync'] as const
+const FREE_ITEMS = ['journal', 'today', 'limits', 'tools', 'analytics', 'screenshots', 'sync'] as const
 
 /**
  * Tiltless Pro (SPEC section 8): what stays free, what Pro adds, the trial, the prices and

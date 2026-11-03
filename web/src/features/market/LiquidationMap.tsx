@@ -1,6 +1,7 @@
 import Big from 'big.js'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Maximize2, Minimize2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { SUPABASE_URL } from '../../app/cloudConfig'
 import { updateSettings, useSettings } from '../../app/settings'
 import { cellScale, liquidationMap, type LiquidationMap as Map_, type MarketSeries } from '../../core/liquidationMap'
@@ -18,6 +19,8 @@ type Coin = (typeof COINS)[number]
 type Period = (typeof PERIODS)[number]
 
 const HEIGHT = 340
+/** Room the expanded view keeps for the controls, the readout and the legend around the map. */
+const EXPANDED_CHROME = 230
 const AXIS_RIGHT = 64
 const AXIS_BOTTOM = 22
 
@@ -74,6 +77,8 @@ export function LiquidationMap() {
   const coin = (COINS as readonly string[]).includes(saved?.coin ?? '') ? (saved!.coin as Coin) : 'BTC'
   const period = (PERIODS as readonly string[]).includes(saved?.period ?? '') ? (saved!.period as Period) : '7d'
   const [load, setLoad] = useState<Load>({ state: 'loading' })
+  const [expanded, setExpanded] = useState(false)
+  const [viewport, setViewport] = useState(() => window.innerHeight)
   const choose = (next: { coin?: Coin; period?: Period }) => updateSettings({ liquidationMap: { coin: next.coin ?? coin, period: next.period ?? period } })
 
   useEffect(() => {
@@ -90,13 +95,35 @@ export function LiquidationMap() {
     }
   }, [coin, period])
 
+  // The expanded map fills the window: Escape or the button brings it back.
+  useEffect(() => {
+    if (!expanded) return
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setExpanded(false)
+    const onResize = () => setViewport(window.innerHeight)
+    onResize()
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('resize', onResize)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', onResize)
+      document.body.style.overflow = ''
+    }
+  }, [expanded])
+  const height = expanded ? Math.max(HEIGHT, viewport - EXPANDED_CHROME) : HEIGHT
+
   const money = (usd: number) => formatMoneyCompact(new Big(Math.round(usd)), 'USD', locale).replace(/^\+/, '')
   const price = (value: number) => formatDecimal(String(Number(value.toPrecision(value >= 100 ? 6 : 4))), locale)
   const percent = (value: number) => `${value >= 0 ? '+' : '−'}${Math.abs(value).toFixed(1)}%`
 
-  return (
-    <div className="liq">
-      <p className="caption">{t('liq.subtitle')}</p>
+  const content = (
+    <div className={expanded ? 'liq liq--expanded' : 'liq'} role={expanded ? 'dialog' : undefined} aria-modal={expanded || undefined} aria-label={expanded ? t('liq.title') : undefined}>
+      <div className="liq__top">
+        <p className="caption">{expanded ? `${t('liq.title')} · ${t('liq.subtitle')}` : t('liq.subtitle')}</p>
+        <button type="button" className="icon-button" aria-label={t(expanded ? 'liq.collapse' : 'liq.expand')} aria-pressed={expanded} onClick={() => setExpanded(!expanded)}>
+          {expanded ? <Minimize2 size={18} aria-hidden="true" /> : <Maximize2 size={18} aria-hidden="true" />}
+        </button>
+      </div>
       <div className="liq__controls">
         <Segmented label={t('liq.coin')} value={coin} onChange={(value) => choose({ coin: value })} options={COINS.map((value) => ({ value, label: value }))} />
         <Segmented label={t('liq.period')} value={period} onChange={(value) => choose({ period: value })} options={PERIODS.map((value) => ({ value, label: t(`liq.period.${value}`) }))} />
@@ -109,7 +136,7 @@ export function LiquidationMap() {
       {load.state === 'error' && <p className="secondary-text liq__status">{t('liq.error')}</p>}
       {load.state === 'ready' && (
         <>
-          <Plot map={load.map} coin={coin} money={money} price={price} />
+          <Plot map={load.map} coin={coin} money={money} price={price} height={height} />
           <div className="liq__legend caption">
             <span>{t('liq.less')}</span>
             <span className="liq__ramp" aria-hidden="true" />
@@ -146,9 +173,18 @@ export function LiquidationMap() {
       )}
     </div>
   )
+  // Expanded, the block moves to the page's end so no card or grid around it limits its size.
+  return expanded ? (
+    <>
+      <p className="caption liq__status">{t('liq.expandedNote')}</p>
+      {createPortal(content, document.body)}
+    </>
+  ) : (
+    content
+  )
 }
 
-function Plot({ map, coin, money, price }: { map: Map_; coin: Coin; money: (usd: number) => string; price: (value: number) => string }) {
+function Plot({ map, coin, money, price, height: HEIGHT }: { map: Map_; coin: Coin; money: (usd: number) => string; price: (value: number) => string; height: number }) {
   const { t, locale } = useI18n()
   const canvas = useRef<HTMLCanvasElement>(null)
   const [width, setWidth] = useState(0)
@@ -256,7 +292,7 @@ function Plot({ map, coin, money, price }: { map: Map_; coin: Coin; money: (usd:
       context.stroke()
       context.globalAlpha = 1
     }
-  }, [map, width, hover, scale, plotWidth, plotHeight, columnWidth, price, locale])
+  }, [map, width, hover, scale, plotWidth, plotHeight, columnWidth, price, locale, HEIGHT])
 
   const onMove = (event: PointerEvent<HTMLCanvasElement>) => {
     const box = event.currentTarget.getBoundingClientRect()

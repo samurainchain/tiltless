@@ -56,6 +56,32 @@ export function canUse(_feature: ProFeature, access: Access): boolean {
   return !access.gated || access.pro
 }
 
+/** Screenshot reads a month on the free plan; Pro reads without a limit. */
+export const FREE_SCREENSHOT_READS = 5
+
+/** Screenshot reads used in a month, kept in the browser. */
+export interface ScreenshotReads {
+  /** `YYYY-MM`, local time. */
+  month: string
+  count: number
+}
+
+function monthKey(now: Date): string {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
+/** Free reads left this month; a new month starts over. */
+export function freeReadsLeft(used: ScreenshotReads | undefined, now: Date): number {
+  const count = used?.month === monthKey(now) ? used.count : 0
+  return Math.max(0, FREE_SCREENSHOT_READS - count)
+}
+
+/** The usage after one more read. */
+export function countRead(used: ScreenshotReads | undefined, now: Date): ScreenshotReads {
+  const month = monthKey(now)
+  return { month, count: (used?.month === month ? used.count : 0) + 1 }
+}
+
 export function widgetUnlocked(id: WidgetId, access: Access): boolean {
   return FREE_WIDGETS.includes(id) || canUse('deepAnalytics', access)
 }

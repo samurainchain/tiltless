@@ -4,7 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type For
 import { activeAccounts, useJournal, useMistakeName, useSelectedAccount, useStore } from '../../app/journal'
 import { useSheets, type TradePrefill } from '../../app/sheets'
 import { useAccess } from '../../app/entitlement'
-import { canUse } from '../../core/entitlements'
+import { canUse, countRead, FREE_SCREENSHOT_READS, freeReadsLeft } from '../../core/entitlements'
+import { updateSettings, useSettings } from '../../app/settings'
 import { ProLock } from '../billing/ProLock'
 import { EMOTIONS, MAX_IMAGES_PER_TRADE, type Account, type Trade } from '../../core/models'
 import { FUTURES_PRESETS, SYMBOL_SUGGESTIONS } from '../../core/presets'
@@ -54,6 +55,10 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
   const { accounts, trades, mistakes, setups, rules } = useJournal()
   const { newAccount } = useSheets()
   const access = useAccess()
+  const screenshotReads = useSettings().screenshotReads
+  // Pro reads without a limit; the free plan gets a few a month (SPEC section 8).
+  const unlimitedReads = canUse('screenshotReader', access)
+  const readsLeft = unlimitedReads ? Infinity : freeReadsLeft(screenshotReads, new Date())
   const selected = useSelectedAccount()
   const mistakeName = useMistakeName()
   const ids = { symbol: useId(), symbols: useId(), entry: useId(), exit: useId(), size: useId(), stop: useId(), fees: useId(), opened: useId(), closed: useId(), note: useId(), account: useId(), contract: useId(), multiplier: useId(), leverage: useId() }
@@ -133,6 +138,8 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
       setErrors({})
       // An open position fills the entry only; the exit waits until the trade is closed.
       setOcr({ state: parsed.open ? 'open' : 'done', progress: 1 })
+      // A read that filled something counts toward the free plan's monthly reads.
+      if (!unlimitedReads) updateSettings({ screenshotReads: countRead(screenshotReads, new Date()) })
     } catch (error) {
       console.error('Screenshot recognition failed', error)
       setOcr({ state: 'error', progress: 0 })
@@ -217,8 +224,14 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
       }
     >
       <form id="trade-entry" className="form-stack" onSubmit={save} onKeyDown={onKeyDown} noValidate>
-        {!existing && !canUse('screenshotReader', access) && <ProLock feature="screenshotReader" compact onNavigate={onClose} />}
-        {!existing && canUse('screenshotReader', access) && (
+        {!existing && readsLeft === 0 && (
+          <div className="screenshot-start">
+            {/* Only when Pro is on sale: before that every read is open. */}
+            {access.gated && <p className="caption">{t('entry.freeReadsUsed', { total: String(FREE_SCREENSHOT_READS) })}</p>}
+            <ProLock feature="screenshotReader" compact onNavigate={onClose} />
+          </div>
+        )}
+        {!existing && readsLeft > 0 && (
           <div className="screenshot-start">
             <Button
               icon={<ImageUp size={18} aria-hidden="true" />}
@@ -241,6 +254,7 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
                         ? t('entry.ocrError')
                         : t('entry.ocrHint')}
             </p>
+            {!unlimitedReads && <p className="caption">{t('entry.freeReads', { left: String(readsLeft), total: String(FREE_SCREENSHOT_READS) })}</p>}
           </div>
         )}
         {accountChoices.length > 1 && (
