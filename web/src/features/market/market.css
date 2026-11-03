@@ -80,6 +80,15 @@
   cursor: grabbing;
 }
 
+/* The scales stretch when dragged, as on TradingView. */
+.liq__plot.liq__plot--price {
+  cursor: ns-resize;
+}
+
+.liq__plot.liq__plot--time {
+  cursor: ew-resize;
+}
+
 .liq__legend {
   display: flex;
   flex-wrap: wrap;

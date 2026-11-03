@@ -375,9 +375,17 @@ function Plot({
   }, [whole, plotWidth, plotHeight])
 
   // Drag to move; two fingers to zoom.
+  // Like TradingView: dragging the price scale stretches prices (up) or squeezes them (down);
+  // dragging the time scale stretches bars (right) or squeezes them (left). Elsewhere, drag moves.
+  type Zone = 'plot' | 'price' | 'time'
+  const zoneAt = (px: number, py: number): Zone => (py > plotHeight ? 'time' : px > plotWidth ? 'price' : 'plot')
   const pointers = useRef(new Map<number, { x: number; y: number }>())
+  const dragZone = useRef<Zone>('plot')
+  const [zone, setZone] = useState<Zone>('plot')
   const onDown = (event: PointerEvent<HTMLCanvasElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId)
+    const box = event.currentTarget.getBoundingClientRect()
+    if (pointers.current.size === 0) dragZone.current = zoneAt(event.clientX - box.left, event.clientY - box.top)
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
   }
   const onUp = (event: PointerEvent<HTMLCanvasElement>) => {
@@ -399,14 +407,22 @@ function Plot({
           setView((current) => zoomView(current, whole, before / after, { x: Math.min(1, Math.max(0, middle.x)), y: Math.min(1, Math.max(0, middle.y)) }))
         }
       } else if (others.length === 0) {
-        const dx = (event.clientX - previous.x) / plotWidth
-        const dy = (event.clientY - previous.y) / plotHeight
-        setView((current) => panView(current, whole, -dx, dy))
+        const dx = event.clientX - previous.x
+        const dy = event.clientY - previous.y
+        if (dragZone.current === 'price') {
+          setView((current) => zoomView(current, whole, Math.exp(dy / 200), { x: 0.5, y: 0.5 }, { time: false, price: true }))
+        } else if (dragZone.current === 'time') {
+          // The latest bar stays put, as on TradingView's time scale.
+          setView((current) => zoomView(current, whole, Math.exp(-dx / 200), { x: 1, y: 0.5 }, { time: true, price: false }))
+        } else {
+          setView((current) => panView(current, whole, -dx / plotWidth, dy / plotHeight))
+        }
       }
       pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
       setHover(undefined)
       return
     }
+    setZone(zoneAt(px, py))
     if (px < 0 || px >= plotWidth || py < 0 || py >= plotHeight) return setHover(undefined)
     setHover({ x: px, y: py })
   }
@@ -448,7 +464,7 @@ function Plot({
       <div className="liq__canvas">
         <canvas
           ref={canvas}
-          className={zoomed || expanded ? 'liq__plot liq__plot--grab' : 'liq__plot'}
+          className={['liq__plot', zoomed || expanded ? 'liq__plot--grab' : '', zone === 'price' ? 'liq__plot--price' : zone === 'time' ? 'liq__plot--time' : ''].filter(Boolean).join(' ')}
           style={{ width: '100%', height: HEIGHT }}
           role="img"
           aria-label={t('liq.alt', { coin, above: full.above ? price(full.above.price) : '—', below: full.below ? price(full.below.price) : '—' })}
@@ -457,7 +473,12 @@ function Plot({
           onPointerCancel={onUp}
           onPointerMove={onMove}
           onPointerLeave={() => setHover(undefined)}
-          onDoubleClick={() => setView(home)}
+          onDoubleClick={() =>
+            // On a scale, double-click resets that scale only; on the map, the whole view.
+            setView((current) =>
+              zone === 'price' ? { ...current, min: home.min, max: home.max } : zone === 'time' ? { ...current, from: home.from, to: home.to } : home,
+            )
+          }
         />
       </div>
       <p className="caption liq__zoomhint">{t('liq.zoomHint')}</p>

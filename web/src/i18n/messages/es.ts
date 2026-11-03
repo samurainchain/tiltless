@@ -91,7 +91,7 @@ export const es: Messages = {
   'liq.zoomIn': 'Acercar',
   'liq.zoomOut': 'Alejar',
   'liq.zoomReset': 'Ver todo el mapa',
-  'liq.zoomHint': 'Rueda o dos dedos para acercar y alejar, arrastra para moverte, doble clic para volver. Sobre la escala de precios la rueda solo cambia el precio. Al alejar, la línea punteada marca el inicio del periodo: antes de ella el mapa es más tenue.',
+  'liq.zoomHint': 'Rueda o dos dedos para hacer zoom, arrastra el mapa para moverte. Arrastra la escala de precios arriba o abajo para estirar los precios y la de tiempo a los lados para estirar las velas, como en TradingView; doble clic en una escala la restablece, en el mapa restablece todo. Al alejar, la línea punteada marca el inicio del periodo: antes de ella el mapa es más tenue.',
   'liq.coin': 'Moneda',
   'liq.period': 'Periodo',
   'liq.period.24h': '24h',
