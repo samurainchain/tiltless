@@ -433,3 +433,13 @@ create table if not exists public.push_subscriptions (
 create index if not exists push_subscriptions_user on public.push_subscriptions (user_id);
 
 alter table public.push_subscriptions enable row level security;
+
+-- Public market data the functions share between their instances (SPEC section 4.7): the
+-- economic calendar feed refuses addresses that ask often. Service role only; no policies.
+create table if not exists public.market_cache (
+  key text primary key,
+  data jsonb not null,
+  fetched_at timestamptz not null default now()
+);
+
+alter table public.market_cache enable row level security;
