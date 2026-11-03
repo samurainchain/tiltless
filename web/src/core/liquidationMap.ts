@@ -91,13 +91,17 @@ function biggest(levels: readonly Level[], side: Side, price: number): { price: 
   return best
 }
 
-export function liquidationMap(series: MarketSeries, rows = ROWS): LiquidationMap | undefined {
+/**
+ * The map over the period. `range` fixes the price rows (a zoomed view gets fine rows for the
+ * prices it shows); without it the rows cover the bars with room around them.
+ */
+export function liquidationMap(series: MarketSeries, rows = ROWS, range?: { min: number; max: number }): LiquidationMap | undefined {
   const oiAt = new Map(series.oi.map(([time, usd]) => [time, usd]))
   const candles = series.candles.filter((bar) => oiAt.has(bar[0]))
   if (candles.length < 2) return undefined
   const shown = candles.slice(-Math.min(series.count, candles.length))
   const firstShown = shown[0]![0]
-  const { min, max } = priceRange(shown)
+  const { min, max } = range ?? priceRange(shown)
   const height = (max - min) / rows
   const cells = new Float64Array(shown.length * rows)
 
@@ -156,4 +160,61 @@ export function cellScale(cells: Float64Array): number {
   const values = Array.from(cells).filter((value) => value > 0).sort((a, b) => a - b)
   if (values.length === 0) return 1
   return values[Math.min(values.length - 1, Math.floor(values.length * 0.995))]!
+}
+
+/** What part of the map is on screen: bars by index (fractional) and prices. */
+export interface MapView {
+  from: number
+  to: number
+  min: number
+  max: number
+}
+
+/** Fewest bars and the narrowest price span a view zooms in to. */
+const MIN_BARS = 8
+const MIN_PRICE_SPAN = 0.002
+
+export function fullView(map: Pick<LiquidationMap, 'times' | 'min' | 'max'>): MapView {
+  return { from: 0, to: map.times.length, min: map.min, max: map.max }
+}
+
+/** Keeps a view inside the map and no smaller than the limits, keeping its size when it can. */
+export function clampView(view: MapView, full: MapView): MapView {
+  const bars = Math.min(full.to - full.from, Math.max(MIN_BARS, view.to - view.from))
+  const from = Math.min(Math.max(full.from, view.from), full.to - bars)
+  const span = Math.min(full.max - full.min, Math.max(full.max * MIN_PRICE_SPAN, view.max - view.min))
+  const min = Math.min(Math.max(full.min, view.min), full.max - span)
+  return { from, to: from + bars, min, max: min + span }
+}
+
+/**
+ * Zooms around a point given as shares of the view (0 = left or bottom, 1 = right or top).
+ * `factor` below 1 zooms in. Time and price can zoom separately.
+ */
+export function zoomView(view: MapView, full: MapView, factor: number, at: { x: number; y: number }, axes: { time: boolean; price: boolean } = { time: true, price: true }): MapView {
+  const bars = view.to - view.from
+  const span = view.max - view.min
+  const next = { ...view }
+  if (axes.time) {
+    const pivot = view.from + bars * at.x
+    next.from = pivot - (pivot - view.from) * factor
+    next.to = next.from + bars * factor
+  }
+  if (axes.price) {
+    const pivot = view.min + span * at.y
+    next.min = pivot - (pivot - view.min) * factor
+    next.max = next.min + span * factor
+  }
+  return clampView(next, full)
+}
+
+/** Moves a view by shares of its size: positive `x` shows later bars, positive `y` higher prices. */
+export function panView(view: MapView, full: MapView, x: number, y: number): MapView {
+  const bars = view.to - view.from
+  const span = view.max - view.min
+  return clampView({ from: view.from + bars * x, to: view.to + bars * x, min: view.min + span * y, max: view.max + span * y }, full)
+}
+
+export function isFullView(view: MapView, full: MapView): boolean {
+  return view.from <= full.from && view.to >= full.to && view.min <= full.min && view.max >= full.max
 }

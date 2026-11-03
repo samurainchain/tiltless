@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cellScale, liquidationMap, liquidationPrice, type Bar, type MarketSeries } from './liquidationMap'
+import { cellScale, clampView, fullView, isFullView, liquidationMap, liquidationPrice, panView, zoomView, type Bar, type MarketSeries } from './liquidationMap'
 
 const HOUR = 3_600_000
 /** Flat bars at `price` with the given open interest, an hour apart. */
@@ -60,5 +60,43 @@ describe('liquidationMap', () => {
     const cells = new Float64Array([0, ...Array.from({ length: 999 }, (_, index) => index + 1), 10_000])
     expect(cellScale(cells)).toBe(996)
     expect(cellScale(new Float64Array(3))).toBe(1)
+  })
+})
+
+describe('map view', () => {
+  const full = { from: 0, to: 168, min: 70_000, max: 84_000 }
+
+  it('zooms in around the pointer and back out to the whole map', () => {
+    const zoomed = zoomView(full, full, 0.5, { x: 1, y: 0.5 })
+    expect(zoomed).toEqual({ from: 84, to: 168, min: 73_500, max: 80_500 })
+    expect(isFullView(zoomed, full)).toBe(false)
+    expect(zoomView(zoomed, full, 4, { x: 0.5, y: 0.5 })).toEqual(full)
+  })
+
+  it('zooms one axis at a time', () => {
+    const prices = zoomView(full, full, 0.5, { x: 0.5, y: 0.5 }, { time: false, price: true })
+    expect(prices.from).toBe(0)
+    expect(prices.to).toBe(168)
+    expect(prices.max - prices.min).toBe(7_000)
+  })
+
+  it('stops at the limits and inside the map', () => {
+    const tiny = zoomView(full, full, 0.0001, { x: 0.5, y: 0.5 })
+    expect(tiny.to - tiny.from).toBe(8)
+    expect(tiny.max - tiny.min).toBeCloseTo(168)
+    expect(panView(zoomView(full, full, 0.5, { x: 0, y: 0 }), full, -1, -1)).toEqual({ from: 0, to: 84, min: 70_000, max: 77_000 })
+    expect(clampView({ from: 160, to: 200, min: 83_000, max: 90_000 }, full)).toEqual({ from: 128, to: 168, min: 77_000, max: 84_000 })
+  })
+
+  it('starts from the whole map', () => {
+    const map = liquidationMap(series([100, 100, 100], [0, 2000, 2000]))!
+    expect(fullView(map)).toEqual({ from: 0, to: 3, min: map.min, max: map.max })
+  })
+
+  it('bins rows over a given price range', () => {
+    const map = liquidationMap(series([100, 100, 100], [0, 2000, 2000]), 10, { min: 99, max: 101 })!
+    expect([map.min, map.max]).toEqual([99, 101])
+    // The 100× levels sit inside; the rest fall outside the range.
+    expect(map.cells.some((value) => value > 0)).toBe(true)
   })
 })

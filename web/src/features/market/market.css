@@ -42,7 +42,6 @@
   width: 100%;
   overflow: hidden;
   border-radius: var(--radius-field);
-  touch-action: pan-y;
 }
 
 .liq__canvas canvas {
@@ -51,6 +50,34 @@
 
 .liq__readout {
   min-height: 1.5em;
+}
+
+.liq__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.liq__zoom {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: var(--space-xs);
+}
+
+/* Page scrolling works over the map until it is zoomed or full screen; then fingers move the map. */
+.liq__plot {
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+
+.liq__plot--grab {
+  touch-action: none;
+  cursor: grab;
+}
+
+.liq__plot--grab:active {
+  cursor: grabbing;
 }
 
 .liq__legend {

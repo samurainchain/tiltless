@@ -1,10 +1,10 @@
 import Big from 'big.js'
-import { ExternalLink, Maximize2, Minimize2 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
+import { ExternalLink, Maximize2, Minimize2, Minus, Plus, RotateCcw } from 'lucide-react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { SUPABASE_URL } from '../../app/cloudConfig'
 import { updateSettings, useSettings } from '../../app/settings'
-import { cellScale, liquidationMap, type LiquidationMap as Map_, type MarketSeries } from '../../core/liquidationMap'
+import { cellScale, fullView, isFullView, liquidationMap, panView, zoomView, type LiquidationMap as Map_, type MapView, type MarketSeries } from '../../core/liquidationMap'
 import { Segmented } from '../../design/components'
 import { formatDecimal, formatMoneyCompact, intlLocale } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
@@ -24,7 +24,7 @@ const EXPANDED_CHROME = 230
 const AXIS_RIGHT = 64
 const AXIS_BOTTOM = 22
 
-type Load = { state: 'loading' } | { state: 'ready'; map: Map_; at: Date } | { state: 'error' }
+type Load = { state: 'loading' } | { state: 'ready'; map: Map_; series: MarketSeries; at: Date } | { state: 'error' }
 
 /** Answers already fetched in this tab, kept two minutes like the function's cache. */
 const cache = new Map<string, { series: MarketSeries; at: Date }>()
@@ -87,7 +87,7 @@ export function LiquidationMap() {
     fetchSeries(coin, period)
       .then(({ series, at }) => {
         const map = liquidationMap(series)
-        if (current) setLoad(map ? { state: 'ready', map, at } : { state: 'error' })
+        if (current) setLoad(map ? { state: 'ready', map, series, at } : { state: 'error' })
       })
       .catch(() => current && setLoad({ state: 'error' }))
     return () => {
@@ -136,7 +136,7 @@ export function LiquidationMap() {
       {load.state === 'error' && <p className="secondary-text liq__status">{t('liq.error')}</p>}
       {load.state === 'ready' && (
         <>
-          <Plot map={load.map} coin={coin} money={money} price={price} height={height} />
+          <Plot key={`${coin}-${period}`} map={load.map} series={load.series} coin={coin} money={money} price={price} height={height} expanded={expanded} />
           <div className="liq__legend caption">
             <span>{t('liq.less')}</span>
             <span className="liq__ramp" aria-hidden="true" />
@@ -184,12 +184,39 @@ export function LiquidationMap() {
   )
 }
 
-function Plot({ map, coin, money, price, height: HEIGHT }: { map: Map_; coin: Coin; money: (usd: number) => string; price: (value: number) => string; height: number }) {
+function Plot({
+  map: full,
+  series,
+  coin,
+  money,
+  price,
+  height: HEIGHT,
+  expanded,
+}: {
+  map: Map_
+  series: MarketSeries
+  coin: Coin
+  money: (usd: number) => string
+  price: (value: number) => string
+  height: number
+  expanded: boolean
+}) {
   const { t, locale } = useI18n()
   const canvas = useRef<HTMLCanvasElement>(null)
   const [width, setWidth] = useState(0)
-  const [hover, setHover] = useState<{ column: number; row: number }>()
-  const scale = useMemo(() => cellScale(map.cells), [map])
+  const [hover, setHover] = useState<{ x: number; y: number }>()
+  const whole = useMemo(() => fullView(full), [full])
+  const [view, setView] = useState<MapView>(whole)
+  const zoomed = !isFullView(view, whole)
+  // A zoomed price range gets its own fine rows; the deferred range keeps wheel zooming smooth.
+  const priceRange = useDeferredValue(useMemo(() => ({ min: view.min, max: view.max }), [view.min, view.max]))
+  const map = useMemo(
+    () => (priceRange.min <= full.min && priceRange.max >= full.max ? full : (liquidationMap(series, full.rows, priceRange) ?? full)),
+    [full, series, priceRange],
+  )
+  const first = Math.max(0, Math.floor(view.from))
+  const last = Math.min(map.times.length, Math.ceil(view.to))
+  const scale = useMemo(() => cellScale(map.cells.slice(first * map.rows, last * map.rows)), [map, first, last])
 
   useEffect(() => {
     const element = canvas.current?.parentElement
@@ -201,8 +228,10 @@ function Plot({ map, coin, money, price, height: HEIGHT }: { map: Map_; coin: Co
 
   const plotWidth = Math.max(0, width - AXIS_RIGHT)
   const plotHeight = HEIGHT - AXIS_BOTTOM
-  const columnWidth = plotWidth / map.times.length
-  const y = (value: number) => plotHeight * (1 - (value - map.min) / (map.max - map.min))
+  const bars = view.to - view.from
+  const columnWidth = plotWidth / bars
+  const x = (column: number) => ((column - view.from) / bars) * plotWidth
+  const y = (value: number) => plotHeight * (1 - (value - view.min) / (view.max - view.min))
 
   useEffect(() => {
     const element = canvas.current
@@ -214,22 +243,30 @@ function Plot({ map, coin, money, price, height: HEIGHT }: { map: Map_; coin: Co
     context.setTransform(ratio, 0, 0, ratio, 0, 0)
     const colors = palette(element)
     context.clearRect(0, 0, width, HEIGHT)
+    context.save()
+    context.beginPath()
+    context.rect(0, 0, plotWidth, plotHeight)
+    context.clip()
 
     // The map: one rectangle per cell, its color by the money waiting there.
-    const rowHeight = plotHeight / map.rows
-    for (let column = 0; column < map.times.length; column += 1) {
+    const rowHeight = (map.max - map.min) / map.rows
+    for (let column = first; column < last; column += 1) {
       for (let row = 0; row < map.rows; row += 1) {
+        const cellTop = y(map.min + (row + 1) * rowHeight)
+        const cellBottom = y(map.min + row * rowHeight)
+        if (cellBottom < 0 || cellTop > plotHeight) continue
         const value = Math.min(1, map.cells[column * map.rows + row]! / scale)
         const color = value < 0.5 ? mix(colors.low, colors.mid, value * 2) : mix(colors.mid, colors.high, (value - 0.5) * 2)
         context.fillStyle = `rgb(${color.join(',')})`
-        context.fillRect(column * columnWidth, plotHeight - (row + 1) * rowHeight, columnWidth + 0.5, rowHeight + 0.5)
+        context.fillRect(x(column), cellTop, columnWidth + 0.5, cellBottom - cellTop + 0.5)
       }
     }
 
     // Candles over it: hollow when rising, filled when falling, outlined with the surface for contrast.
     const body = Math.max(1, columnWidth * 0.6)
-    map.candles.forEach(([, open, high, low, close], column) => {
-      const center = column * columnWidth + columnWidth / 2
+    for (let column = first; column < last; column += 1) {
+      const [, open, high, low, close] = full.candles[column]!
+      const center = x(column) + columnWidth / 2
       context.strokeStyle = colors.surface
       context.lineWidth = 3
       context.beginPath()
@@ -247,88 +284,162 @@ function Plot({ map, coin, money, price, height: HEIGHT }: { map: Map_; coin: Co
       context.fillStyle = close >= open ? colors.surface : colors.text
       context.fillRect(center - body / 2, top, body, height)
       context.strokeRect(center - body / 2, top, body, height)
-    })
+    }
 
     // The price now.
     context.setLineDash([4, 4])
     context.strokeStyle = colors.text
     context.beginPath()
-    context.moveTo(0, y(map.price))
-    context.lineTo(plotWidth, y(map.price))
+    context.moveTo(0, y(full.price))
+    context.lineTo(plotWidth, y(full.price))
     context.stroke()
     context.setLineDash([])
+
+    if (hover) {
+      context.strokeStyle = colors.text
+      context.globalAlpha = 0.5
+      context.beginPath()
+      context.moveTo(hover.x, 0)
+      context.lineTo(hover.x, plotHeight)
+      context.moveTo(0, hover.y)
+      context.lineTo(plotWidth, hover.y)
+      context.stroke()
+      context.globalAlpha = 1
+    }
+    context.restore()
 
     // Axes.
     context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace'
     context.fillStyle = colors.muted
     context.textBaseline = 'middle'
     for (let tick = 1; tick <= 4; tick += 1) {
-      const value = map.min + ((map.max - map.min) * tick) / 5
+      const value = view.min + ((view.max - view.min) * tick) / 5
       context.fillText(price(value), plotWidth + 6, y(value))
     }
-    context.fillStyle = colors.text
-    context.fillText(price(map.price), plotWidth + 6, y(map.price))
+    if (full.price >= view.min && full.price <= view.max) {
+      context.fillStyle = colors.text
+      context.fillText(price(full.price), plotWidth + 6, y(full.price))
+    }
     context.fillStyle = colors.muted
     context.textBaseline = 'alphabetic'
-    const span = map.times.at(-1)! - map.times[0]!
-    const format = new Intl.DateTimeFormat(intlLocale(locale), span > 2 * 86_400_000 ? { day: 'numeric', month: 'short' } : { hour: '2-digit', minute: '2-digit' })
+    const span = full.times[Math.max(first, last - 1)]! - full.times[first]!
+    const format = new Intl.DateTimeFormat(intlLocale(locale), span > 2 * 86_400_000 ? { day: 'numeric', month: 'short' } : { day: 'numeric', hour: '2-digit', minute: '2-digit' })
     for (const share of [0, 0.5, 1]) {
-      const column = Math.min(map.times.length - 1, Math.round(share * (map.times.length - 1)))
-      const text = format.format(map.times[column]!)
-      const x = column * columnWidth + columnWidth / 2
+      const column = Math.min(full.times.length - 1, Math.max(0, Math.floor(view.from + share * (bars - 1))))
       context.textAlign = share === 0 ? 'left' : share === 1 ? 'right' : 'center'
-      context.fillText(text, share === 0 ? 0 : share === 1 ? plotWidth : x, HEIGHT - 6)
+      context.fillText(format.format(full.times[column]!), share * plotWidth, HEIGHT - 6)
     }
     context.textAlign = 'left'
+  }, [map, full, view, first, last, width, hover, scale, plotWidth, plotHeight, columnWidth, price, locale, HEIGHT, bars])
 
-    if (hover) {
-      context.strokeStyle = colors.text
-      context.globalAlpha = 0.5
-      context.beginPath()
-      context.moveTo(hover.column * columnWidth + columnWidth / 2, 0)
-      context.lineTo(hover.column * columnWidth + columnWidth / 2, plotHeight)
-      context.moveTo(0, plotHeight - (hover.row + 0.5) * rowHeight)
-      context.lineTo(plotWidth, plotHeight - (hover.row + 0.5) * rowHeight)
-      context.stroke()
-      context.globalAlpha = 1
+  // Wheel: zoom around the pointer; over the price axis, prices only. Not passive, so the page
+  // doesn't scroll while the map zooms.
+  useEffect(() => {
+    const element = canvas.current
+    if (!element) return
+    const onWheel = (event: WheelEvent) => {
+      const box = element.getBoundingClientRect()
+      const px = event.clientX - box.left
+      const py = event.clientY - box.top
+      if (py > plotHeight) return
+      event.preventDefault()
+      const factor = Math.exp(Math.max(-1, Math.min(1, event.deltaY / 300)))
+      const onAxis = px > plotWidth
+      setView((current) =>
+        zoomView(current, whole, factor, { x: Math.min(1, px / plotWidth), y: 1 - py / plotHeight }, { time: !onAxis && !event.shiftKey, price: onAxis || !event.altKey }),
+      )
     }
-  }, [map, width, hover, scale, plotWidth, plotHeight, columnWidth, price, locale, HEIGHT])
+    element.addEventListener('wheel', onWheel, { passive: false })
+    return () => element.removeEventListener('wheel', onWheel)
+  }, [whole, plotWidth, plotHeight])
 
+  // Drag to move; two fingers to zoom.
+  const pointers = useRef(new Map<number, { x: number; y: number }>())
+  const onDown = (event: PointerEvent<HTMLCanvasElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
+  }
+  const onUp = (event: PointerEvent<HTMLCanvasElement>) => {
+    pointers.current.delete(event.pointerId)
+  }
   const onMove = (event: PointerEvent<HTMLCanvasElement>) => {
     const box = event.currentTarget.getBoundingClientRect()
-    const x = event.clientX - box.left
-    const yPos = event.clientY - box.top
-    if (x < 0 || x >= plotWidth || yPos < 0 || yPos >= plotHeight) return setHover(undefined)
-    setHover({ column: Math.floor(x / columnWidth), row: Math.floor(((plotHeight - yPos) / plotHeight) * map.rows) })
+    const px = event.clientX - box.left
+    const py = event.clientY - box.top
+    const previous = pointers.current.get(event.pointerId)
+    if (previous) {
+      const others = [...pointers.current.entries()].filter(([id]) => id !== event.pointerId)
+      if (others.length === 1) {
+        const other = others[0]![1]
+        const before = Math.hypot(previous.x - other.x, previous.y - other.y)
+        const after = Math.hypot(event.clientX - other.x, event.clientY - other.y)
+        if (before > 0 && after > 0) {
+          const middle = { x: ((event.clientX + other.x) / 2 - box.left) / plotWidth, y: 1 - ((event.clientY + other.y) / 2 - box.top) / plotHeight }
+          setView((current) => zoomView(current, whole, before / after, { x: Math.min(1, Math.max(0, middle.x)), y: Math.min(1, Math.max(0, middle.y)) }))
+        }
+      } else if (others.length === 0) {
+        const dx = (event.clientX - previous.x) / plotWidth
+        const dy = (event.clientY - previous.y) / plotHeight
+        setView((current) => panView(current, whole, -dx, dy))
+      }
+      pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
+      setHover(undefined)
+      return
+    }
+    if (px < 0 || px >= plotWidth || py < 0 || py >= plotHeight) return setHover(undefined)
+    setHover({ x: px, y: py })
   }
+
+  const zoomBy = (factor: number) => setView((current) => zoomView(current, whole, factor, { x: 0.5, y: 0.5 }))
 
   let readout = t('liq.hint')
   if (hover) {
-    const level = map.min + ((hover.row + 0.5) / map.rows) * (map.max - map.min)
-    const usd = map.cells[hover.column * map.rows + hover.row] ?? 0
-    const close = map.candles[hover.column]![4]
+    const column = Math.min(full.times.length - 1, Math.max(0, Math.floor(view.from + (hover.x / plotWidth) * bars)))
+    const level = view.min + (1 - hover.y / plotHeight) * (view.max - view.min)
+    const row = Math.floor(((level - map.min) / (map.max - map.min)) * map.rows)
+    const usd = row >= 0 && row < map.rows ? (map.cells[column * map.rows + row] ?? 0) : 0
+    const close = full.candles[column]![4]
     readout = t(level < close ? 'liq.hoverLongs' : 'liq.hoverShorts', {
       price: price(level),
-      time: new Intl.DateTimeFormat(intlLocale(locale), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(map.times[hover.column]!),
+      time: new Intl.DateTimeFormat(intlLocale(locale), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(full.times[column]!),
       usd: money(usd),
     })
   }
 
   return (
     <>
-      <p className="caption numeric liq__readout" aria-live="polite">
-        {readout}
-      </p>
+      <div className="liq__toolbar">
+        <p className="caption numeric liq__readout" aria-live="polite">
+          {readout}
+        </p>
+        <div className="liq__zoom">
+          <button type="button" className="icon-button" aria-label={t('liq.zoomIn')} onClick={() => zoomBy(0.6)}>
+            <Plus size={16} aria-hidden="true" />
+          </button>
+          <button type="button" className="icon-button" aria-label={t('liq.zoomOut')} disabled={!zoomed} onClick={() => zoomBy(1 / 0.6)}>
+            <Minus size={16} aria-hidden="true" />
+          </button>
+          <button type="button" className="icon-button" aria-label={t('liq.zoomReset')} disabled={!zoomed} onClick={() => setView(whole)}>
+            <RotateCcw size={16} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
       <div className="liq__canvas">
         <canvas
           ref={canvas}
+          className={zoomed || expanded ? 'liq__plot liq__plot--grab' : 'liq__plot'}
           style={{ width: '100%', height: HEIGHT }}
           role="img"
-          aria-label={t('liq.alt', { coin, above: map.above ? price(map.above.price) : '—', below: map.below ? price(map.below.price) : '—' })}
+          aria-label={t('liq.alt', { coin, above: full.above ? price(full.above.price) : '—', below: full.below ? price(full.below.price) : '—' })}
+          onPointerDown={onDown}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
           onPointerMove={onMove}
           onPointerLeave={() => setHover(undefined)}
+          onDoubleClick={() => setView(whole)}
         />
       </div>
+      <p className="caption liq__zoomhint">{t('liq.zoomHint')}</p>
     </>
   )
 }
