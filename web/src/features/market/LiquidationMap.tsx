@@ -4,7 +4,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, type PointerEve
 import { createPortal } from 'react-dom'
 import { SUPABASE_URL } from '../../app/cloudConfig'
 import { updateSettings, useSettings } from '../../app/settings'
-import { cellScale, fullView, isFullView, liquidationMap, panView, zoomView, type LiquidationMap as Map_, type MapView, type MarketSeries } from '../../core/liquidationMap'
+import { cellScale, isFullView, liquidationMap, outerView, panView, sameView, zoomView, type LiquidationMap as Map_, type MapView, type MarketSeries } from '../../core/liquidationMap'
 import { Segmented } from '../../design/components'
 import { formatDecimal, formatMoneyCompact, intlLocale } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
@@ -205,14 +205,20 @@ function Plot({
   const canvas = useRef<HTMLCanvasElement>(null)
   const [width, setWidth] = useState(0)
   const [hover, setHover] = useState<{ x: number; y: number }>()
-  const whole = useMemo(() => fullView(full), [full])
-  const [view, setView] = useState<MapView>(whole)
-  const zoomed = !isFullView(view, whole)
+  // Every bar fetched, the warm-up before the period included, so the map can zoom out past it.
+  const all = useMemo(() => ({ ...series, count: series.candles.length }), [series])
+  const total = useMemo(() => liquidationMap(all)?.times.length ?? full.times.length, [all, full])
+  // Home is the period at its default prices; zooming out may go to every bar and 4× the prices.
+  const home = useMemo<MapView>(() => ({ from: total - full.times.length, to: total, min: full.min, max: full.max }), [total, full])
+  const whole = useMemo(() => outerView(home, total), [home, total])
+  const [view, setView] = useState<MapView>(home)
+  const zoomed = !sameView(view, home)
+  const farthest = isFullView(view, whole)
   // A zoomed price range gets its own fine rows; the deferred range keeps wheel zooming smooth.
   const priceRange = useDeferredValue(useMemo(() => ({ min: view.min, max: view.max }), [view.min, view.max]))
   const map = useMemo(
-    () => (priceRange.min <= full.min && priceRange.max >= full.max ? full : (liquidationMap(series, full.rows, priceRange) ?? full)),
-    [full, series, priceRange],
+    () => liquidationMap(all, full.rows, priceRange) ?? full,
+    [all, full, priceRange],
   )
   const first = Math.max(0, Math.floor(view.from))
   const last = Math.min(map.times.length, Math.ceil(view.to))
@@ -265,7 +271,7 @@ function Plot({
     // Candles over it: hollow when rising, filled when falling, outlined with the surface for contrast.
     const body = Math.max(1, columnWidth * 0.6)
     for (let column = first; column < last; column += 1) {
-      const [, open, high, low, close] = full.candles[column]!
+      const [, open, high, low, close] = map.candles[column]!
       const center = x(column) + columnWidth / 2
       context.strokeStyle = colors.surface
       context.lineWidth = 3
@@ -284,6 +290,18 @@ function Plot({
       context.fillStyle = close >= open ? colors.surface : colors.text
       context.fillRect(center - body / 2, top, body, height)
       context.strokeRect(center - body / 2, top, body, height)
+    }
+
+    // Zoomed out past the period: where it starts. Bars before it only warm the model up, so the
+    // map there is thinner than the market was.
+    if (view.from < home.from) {
+      context.setLineDash([2, 4])
+      context.strokeStyle = colors.muted
+      context.beginPath()
+      context.moveTo(x(home.from), 0)
+      context.lineTo(x(home.from), plotHeight)
+      context.stroke()
+      context.setLineDash([])
     }
 
     // The price now.
@@ -312,8 +330,11 @@ function Plot({
     context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace'
     context.fillStyle = colors.muted
     context.textBaseline = 'middle'
+    const priceShown = full.price >= view.min && full.price <= view.max
     for (let tick = 1; tick <= 4; tick += 1) {
       const value = view.min + ((view.max - view.min) * tick) / 5
+      // A tick next to the price now would print over its label.
+      if (priceShown && Math.abs(y(value) - y(full.price)) < 16) continue
       context.fillText(price(value), plotWidth + 6, y(value))
     }
     if (full.price >= view.min && full.price <= view.max) {
@@ -322,15 +343,15 @@ function Plot({
     }
     context.fillStyle = colors.muted
     context.textBaseline = 'alphabetic'
-    const span = full.times[Math.max(first, last - 1)]! - full.times[first]!
+    const span = map.times[Math.max(first, last - 1)]! - map.times[first]!
     const format = new Intl.DateTimeFormat(intlLocale(locale), span > 2 * 86_400_000 ? { day: 'numeric', month: 'short' } : { day: 'numeric', hour: '2-digit', minute: '2-digit' })
     for (const share of [0, 0.5, 1]) {
-      const column = Math.min(full.times.length - 1, Math.max(0, Math.floor(view.from + share * (bars - 1))))
+      const column = Math.min(map.times.length - 1, Math.max(0, Math.floor(view.from + share * (bars - 1))))
       context.textAlign = share === 0 ? 'left' : share === 1 ? 'right' : 'center'
-      context.fillText(format.format(full.times[column]!), share * plotWidth, HEIGHT - 6)
+      context.fillText(format.format(map.times[column]!), share * plotWidth, HEIGHT - 6)
     }
     context.textAlign = 'left'
-  }, [map, full, view, first, last, width, hover, scale, plotWidth, plotHeight, columnWidth, price, locale, HEIGHT, bars])
+  }, [map, full, home, view, first, last, width, hover, scale, plotWidth, plotHeight, columnWidth, price, locale, HEIGHT, bars])
 
   // Wheel: zoom around the pointer; over the price axis, prices only. Not passive, so the page
   // doesn't scroll while the map zooms.
@@ -394,14 +415,14 @@ function Plot({
 
   let readout = t('liq.hint')
   if (hover) {
-    const column = Math.min(full.times.length - 1, Math.max(0, Math.floor(view.from + (hover.x / plotWidth) * bars)))
+    const column = Math.min(map.times.length - 1, Math.max(0, Math.floor(view.from + (hover.x / plotWidth) * bars)))
     const level = view.min + (1 - hover.y / plotHeight) * (view.max - view.min)
     const row = Math.floor(((level - map.min) / (map.max - map.min)) * map.rows)
     const usd = row >= 0 && row < map.rows ? (map.cells[column * map.rows + row] ?? 0) : 0
-    const close = full.candles[column]![4]
+    const close = map.candles[column]![4]
     readout = t(level < close ? 'liq.hoverLongs' : 'liq.hoverShorts', {
       price: price(level),
-      time: new Intl.DateTimeFormat(intlLocale(locale), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(full.times[column]!),
+      time: new Intl.DateTimeFormat(intlLocale(locale), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(map.times[column]!),
       usd: money(usd),
     })
   }
@@ -416,10 +437,10 @@ function Plot({
           <button type="button" className="icon-button" aria-label={t('liq.zoomIn')} onClick={() => zoomBy(0.6)}>
             <Plus size={16} aria-hidden="true" />
           </button>
-          <button type="button" className="icon-button" aria-label={t('liq.zoomOut')} disabled={!zoomed} onClick={() => zoomBy(1 / 0.6)}>
+          <button type="button" className="icon-button" aria-label={t('liq.zoomOut')} disabled={farthest} onClick={() => zoomBy(1 / 0.6)}>
             <Minus size={16} aria-hidden="true" />
           </button>
-          <button type="button" className="icon-button" aria-label={t('liq.zoomReset')} disabled={!zoomed} onClick={() => setView(whole)}>
+          <button type="button" className="icon-button" aria-label={t('liq.zoomReset')} disabled={!zoomed} onClick={() => setView(home)}>
             <RotateCcw size={16} aria-hidden="true" />
           </button>
         </div>
@@ -436,7 +457,7 @@ function Plot({
           onPointerCancel={onUp}
           onPointerMove={onMove}
           onPointerLeave={() => setHover(undefined)}
-          onDoubleClick={() => setView(whole)}
+          onDoubleClick={() => setView(home)}
         />
       </div>
       <p className="caption liq__zoomhint">{t('liq.zoomHint')}</p>

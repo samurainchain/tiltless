@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cellScale, clampView, fullView, isFullView, liquidationMap, liquidationPrice, panView, zoomView, type Bar, type MarketSeries } from './liquidationMap'
+import { cellScale, clampView, fullView, isFullView, liquidationMap, liquidationPrice, outerView, panView, sameView, zoomView, type Bar, type MarketSeries } from './liquidationMap'
 
 const HOUR = 3_600_000
 /** Flat bars at `price` with the given open interest, an hour apart. */
@@ -98,5 +98,23 @@ describe('map view', () => {
     expect([map.min, map.max]).toEqual([99, 101])
     // The 100× levels sit inside; the rest fall outside the range.
     expect(map.cells.some((value) => value > 0)).toBe(true)
+  })
+})
+
+describe('zooming out', () => {
+  it('goes past the period to the warm-up bars and wider prices', () => {
+    const home = { from: 168, to: 336, min: 70_000, max: 84_000 }
+    const outer = outerView(home, 336)
+    expect(outer).toEqual({ from: 0, to: 336, min: 49_000, max: 105_000 })
+    const out = zoomView(home, outer, 2, { x: 1, y: 0.5 })
+    expect(out.to - out.from).toBe(336)
+    expect(out.max - out.min).toBe(28_000)
+    expect(isFullView(zoomView(out, outer, 4, { x: 0.5, y: 0.5 }), outer)).toBe(true)
+    expect(sameView(home, { ...home })).toBe(true)
+    expect(sameView(home, out)).toBe(false)
+  })
+
+  it('never goes below a price of zero', () => {
+    expect(outerView({ from: 0, to: 10, min: 1, max: 9 }, 10).min).toBe(0)
   })
 })

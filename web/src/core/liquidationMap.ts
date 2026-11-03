@@ -218,3 +218,14 @@ export function panView(view: MapView, full: MapView, x: number, y: number): Map
 export function isFullView(view: MapView, full: MapView): boolean {
   return view.from <= full.from && view.to >= full.to && view.min <= full.min && view.max >= full.max
 }
+
+/** How far out a view may go: every bar fetched (the warm-up too) and prices `times`× wider. */
+export function outerView(home: MapView, bars: number, times = 4): MapView {
+  const middle = (home.min + home.max) / 2
+  const half = ((home.max - home.min) * times) / 2
+  return { from: 0, to: bars, min: Math.max(0, middle - half), max: middle + half }
+}
+
+export function sameView(a: MapView, b: MapView): boolean {
+  return Math.abs(a.from - b.from) < 1e-6 && Math.abs(a.to - b.to) < 1e-6 && Math.abs(a.min - b.min) < 1e-9 && Math.abs(a.max - b.max) < 1e-9
+}

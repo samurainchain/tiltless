@@ -92,7 +92,7 @@ export const en = {
   'liq.zoomIn': 'Zoom in',
   'liq.zoomOut': 'Zoom out',
   'liq.zoomReset': 'Show the whole map',
-  'liq.zoomHint': 'Wheel or two fingers to zoom, drag to move, double-click to reset. Over the price scale the wheel zooms prices only.',
+  'liq.zoomHint': 'Wheel or two fingers to zoom in and out, drag to move, double-click to go back. Over the price scale the wheel zooms prices only. Zoomed out, the dotted line marks where the period starts: the map before it is thinner.',
   'liq.coin': 'Coin',
   'liq.period': 'Period',
   'liq.period.24h': '24h',
