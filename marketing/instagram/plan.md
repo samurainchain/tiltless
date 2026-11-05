@@ -12,9 +12,9 @@ Mexican, so everything is in Spanish (Mexico, "tú") from now on. Post at **7:30
 | Fri Oct 30 | 7:30 pm | REEL (voiced, ES) | OFFER | 03 "Mira cuánto te cuestan tus errores. 30 días gratis." |
 | Sat Oct 31 | 7:30 pm | REEL (voiced, ES) | PROOF | 02 "Deja de hacer operaciones de 15 minutos." |
 | Sun Nov 1 | — | stories + engage | | |
-| Tue Nov 3 | 7:30 pm | REEL (voiced, ES) | OPINION | 04 "No necesitas una estrategia nueva. Necesitas 15 minutos después de una pérdida." (moved from Mon Nov 2: not posted that day) |
-| Wed Nov 4 | 7:30 pm | REEL (voiced, ES) | PROOF | 06 "Operar con enojo te costó $680 este mes. Con calma ganaste $885." |
-| Fri Nov 6 | 7:30 pm | REEL (voiced, ES) | STORY | 07 "Mover tu stop 'solo esta vez' te costó $280 este mes." |
+| Thu Nov 5 | 7:30 pm | REEL (voiced, ES) | OPINION | 04 "No necesitas una estrategia nueva. Necesitas 15 minutos después de una pérdida." (moved from Mon Nov 2, then Tue Nov 3: the reminders arrived late) |
+| Fri Nov 6 | 7:30 pm | REEL (voiced, ES) | PROOF | 06 "Operar con enojo te costó $680 este mes. Con calma ganaste $885." |
+| Sat Nov 7 | 7:30 pm | REEL (voiced, ES) | STORY | 07 "Mover tu stop 'solo esta vez' te costó $280 este mes." |
 
 Captions in reels/es-week-1.md. Held back: reel 05 (screenshot reader) until it reads Spanish
 exchange screens; the "7 ways traders tilt" carousel until it is translated.
