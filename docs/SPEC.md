@@ -497,9 +497,9 @@ Pro: вся аналитика (цена ошибок и все разбивки
 
 ### Типографика
 
-- Шрифт — системный SF Pro, через стили Dynamic Type (`.largeTitle`, `.title2`, `.body`, `.caption`).
+- Шрифт — Geist (с ноября 2026, как в вебе; до этого системный SF Pro), привязанный к стилям Dynamic Type (`.largeTitle`, `.title2`, `.body`, `.caption`) через `Font.custom(_:size:relativeTo:)`. Маленькие подписи — Geist Mono. Файлы TTF в Mirror/Resources/Fonts с лицензией OFL, регистрируются при запуске (FontRegistry).
 - Все числа — `.monospacedDigit()`, чтобы цифры не прыгали.
-- Главные суммы (PnL дня) — SF Pro Rounded, 44–56 pt, полужирный.
+- Главные суммы (PnL дня) — Geist Bold, 48 pt по умолчанию, масштабируется с Dynamic Type.
 - Веб (ноябрь 2026): Geist для текста и Geist Mono для подписей, меток и цифр на шкалах (Vercel, SIL OFL, файлы в web/public/fonts вместе с OFL.txt). Шрифты отдаёт сам сайт, без Google Fonts: одинаково на всех устройствах, и сторонний сервис не видит посетителя. Токены --font-body и --font-mono в tokens.css; лендинг, журнал, юридические страницы, картинки для шеринга и холсты графиков берут их же.
 
 ### Отступы и формы

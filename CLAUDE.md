@@ -65,7 +65,7 @@ Full product spec: docs/SPEC.md. Read the relevant section before every task.
 ## Design direction
 - Two styles the user picks (Profile, or the theme menu in the top bar): "glow" (default) and "flat". Flat is the Supabase-dashboard look: near-black background, thin 1px borders, small uppercase monospace labels, dense cards. Glow (src/design/glow.css, inspired by the Deadlock Mod Manager the owner likes) adds the accent's light: corner glows over a faint grid, translucent cards with a lit top edge, a filled glowing current tab, glowing primary buttons and hero numbers
 - Five accents (emerald by default, amber, violet, blue, pink) in tokens.css, each with a dark and a light variant, all WCAG AA (contrast.test.ts covers every accent and theme). No red accent: red means loss. Profit and loss colors never change with the accent
-- Type: Geist (text) and Geist Mono (labels, scales), self-hosted in web/public/fonts with the OFL license, through --font-body and --font-mono; canvases (share cards, charts) use the same families
+- Type: Geist (text) and Geist Mono (labels, scales), self-hosted in web/public/fonts with the OFL license, through --font-body and --font-mono; canvases (share cards, charts) use the same families. iOS uses the same families: TTFs in Mirror/Resources/Fonts registered at launch by FontRegistry, DSFont tokens via Font.custom(_:size:relativeTo:) so Dynamic Type still scales (added 2026-11-06 without a Mac build: check it on the next Xcode build)
 - Further visual work should go through these tokens and styles, not one-off colors
 
 ## Instagram marketing

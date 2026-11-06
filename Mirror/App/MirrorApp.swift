@@ -6,6 +6,7 @@ struct MirrorApp: App {
     private let container: ModelContainer
 
     init() {
+        FontRegistry.registerBundledFonts()
         do {
             container = try Persistence.makeContainer()
         } catch {
