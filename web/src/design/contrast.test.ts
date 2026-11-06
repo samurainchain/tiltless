@@ -2,12 +2,14 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 // WCAG AA contrast for the design tokens (SPEC section 9, principle 6): 4.5:1 for text,
-// in both themes. Reads tokens.css itself, so a palette change is checked automatically.
+// in both themes and in the soft style's greys. Reads tokens.css and soft.css themselves, so a
+// palette change is checked automatically.
 
 /** A rule's custom properties: hex colors, or `var(--name)` references kept as `@name`. */
-function block(selector: string): Record<string, string> {
-  const start = css.indexOf(selector)
-  const body = css.slice(css.indexOf('{', start) + 1, css.indexOf('}', start))
+function block(selector: string, source = css): Record<string, string> {
+  const start = source.indexOf(selector)
+  if (start < 0) throw new Error(`no rule ${selector}`)
+  const body = source.slice(source.indexOf('{', start) + 1, source.indexOf('}', start))
   return Object.fromEntries(
     [...body.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6}|var\(--([\w-]+)\))/gi)].map((match) => [match[1]!, match[3] ? `@${match[3]}` : match[2]!.toLowerCase()]),
   )
@@ -23,15 +25,35 @@ function resolve(tokens: Record<string, string>): Record<string, string> {
 }
 
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf8')
+const softCss = readFileSync(new URL('./soft.css', import.meta.url), 'utf8')
 
 const ACCENTS = ['default', 'amber', 'violet', 'blue', 'pink'] as const
 const accentBlock = (accent: (typeof ACCENTS)[number]) => (accent === 'default' ? {} : block(`:root[data-accent='${accent}']`))
 
-const theme = (name: 'dark' | 'light', accent: (typeof ACCENTS)[number] = 'default') =>
-  resolve({ ...block(':root {'), ...(name === 'light' ? block(":root[data-theme='light']") : {}), ...accentBlock(accent) })
+type Style = 'glow' | 'soft'
+/** The soft style's own greys, put over the theme's (soft.css). */
+const softBlock = (name: 'dark' | 'light') =>
+  name === 'light' ? block(":root[data-style='soft'][data-theme='light']", softCss) : block(":root[data-style='soft'] {", softCss)
+
+const theme = (name: 'dark' | 'light', accent: (typeof ACCENTS)[number] = 'default', style: Style = 'glow') =>
+  resolve({
+    ...block(':root {'),
+    ...(name === 'light' ? block(":root[data-theme='light']") : {}),
+    ...(style === 'soft' ? softBlock(name) : {}),
+    ...accentBlock(accent),
+  })
 
 const dark = theme('dark')
 const light = theme('light')
+const softDark = theme('dark', 'default', 'soft')
+const softLight = theme('light', 'default', 'soft')
+/** Every theme the tone checks below run on. */
+const THEMES = [
+  ['dark', dark],
+  ['light', light],
+  ['soft dark', softDark],
+  ['soft light', softLight],
+] as const
 
 function luminance(hex: string): number {
   const channel = (offset: number) => {
@@ -59,9 +81,14 @@ const TEXT_PAIRS: [text: string, backgrounds: string[]][] = [
 
 it('defines the light theme the same way for the system setting and the manual switch', () => {
   expect(block(":root:not([data-theme='dark'])")).toEqual(block(":root[data-theme='light']"))
+  expect(block(":root[data-style='soft']:not([data-theme='dark'])", softCss)).toEqual(softBlock('light'))
 })
 
-describe.each(ACCENTS.flatMap((accent) => (['dark', 'light'] as const).map((name) => [`${name} ${accent}`, theme(name, accent)] as const)))('%s theme', (_name, tokens) => {
+describe.each(
+  (['glow', 'soft'] as const).flatMap((style) =>
+    ACCENTS.flatMap((accent) => (['dark', 'light'] as const).map((name) => [`${style} ${name} ${accent}`, theme(name, accent, style)] as const)),
+  ),
+)('%s theme', (_name, tokens) => {
   it.each(TEXT_PAIRS.flatMap(([text, backgrounds]) => backgrounds.map((background) => [text, background] as const)))(
     '%s on %s is at least 4.5:1',
     (text, background) => {
@@ -83,10 +110,7 @@ function mix(color: string, base: string, share: number): string {
     .join('')}`
 }
 
-describe.each([
-  ['dark', dark],
-  ['light', light],
-])('%s theme charts', (_name, tokens) => {
+describe.each(THEMES)('%s theme charts', (_name, tokens) => {
   it.each(MARKS)('%s is at least 3:1 on the card', (mark) => {
     expect(contrast(tokens[mark]!, tokens['color-surface']!)).toBeGreaterThanOrEqual(3)
   })
@@ -99,10 +123,7 @@ describe.each([
 })
 
 // Side badges and the long/short toggle: tone text on an 8% tint of the card.
-describe.each([
-  ['dark', dark],
-  ['light', light],
-])('%s theme tints', (_name, tokens) => {
+describe.each(THEMES)('%s theme tints', (_name, tokens) => {
   it.each(['color-profit', 'color-loss'])('%s text on its own tint is at least 4.5:1', (tone) => {
     const tint = mix(tokens[tone]!, tokens['color-surface']!, 0.08)
     expect(contrast(tokens[tone]!, tint)).toBeGreaterThanOrEqual(4.5)
@@ -110,10 +131,7 @@ describe.each([
 })
 
 // Control edges (text fields, the chosen segmented option) against what surrounds them.
-describe.each([
-  ['dark', dark],
-  ['light', light],
-])('%s theme controls', (_name, tokens) => {
+describe.each(THEMES)('%s theme controls', (_name, tokens) => {
   it.each(['color-background', 'color-surface', 'color-surface-elevated'])('control border on %s is at least 3:1', (background) => {
     expect(contrast(tokens['color-border-control']!, tokens[background]!)).toBeGreaterThanOrEqual(3)
   })

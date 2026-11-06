@@ -4,7 +4,7 @@ import type { WeekStart } from '../core/stats'
 export type LanguageSetting = 'system' | 'en' | 'ru' | 'es'
 export type ThemeSetting = 'system' | 'dark' | 'light'
 export type WeekStartSetting = 'auto' | 'monday' | 'sunday'
-export type StyleSetting = 'glow' | 'flat'
+export type StyleSetting = 'soft' | 'glow' | 'flat'
 export const ACCENTS = ['green', 'amber', 'violet', 'blue', 'pink'] as const
 export type AccentSetting = (typeof ACCENTS)[number]
 /** `all` or an account id. */
@@ -13,8 +13,11 @@ export type AccountSelection = string
 export interface Settings {
   language: LanguageSetting
   theme: ThemeSetting
-  /** Glow (the accent's light behind the page and on what's active) or flat. */
+  /** Soft (calm greys and rounded panels, the default), glow (the accent's light behind the page
+   *  and on what's active) or flat. */
   style: StyleSetting
+  /** Set once the soft style became the default for this browser (see read). */
+  softStyle?: true
   accent: AccentSetting
   selectedAccount: AccountSelection
   weekStart: WeekStartSetting
@@ -38,7 +41,7 @@ export interface Settings {
 
 // Storage keys keep the app's first name, so saved settings survive the rename.
 const STORAGE_KEY = 'mirror.settings'
-const DEFAULTS: Settings = { language: 'system', theme: 'system', style: 'glow', accent: 'green', selectedAccount: 'all', weekStart: 'auto' }
+const DEFAULTS: Settings = { language: 'system', theme: 'system', style: 'soft', softStyle: true, accent: 'green', selectedAccount: 'all', weekStart: 'auto' }
 
 // Per-browser preferences. They live in localStorage, apart from the journal data, and are
 // read defensively: storage can be unavailable (private mode) or hold stale shapes.
@@ -49,7 +52,13 @@ const listeners = new Set<() => void>()
 function read(): Settings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? { ...DEFAULTS, ...(JSON.parse(raw) as Partial<Settings>) } : DEFAULTS
+    if (!raw) return DEFAULTS
+    const stored = JSON.parse(raw) as Partial<Settings>
+    const saved: Settings = { ...DEFAULTS, ...stored }
+    // Glow was the default until November 2026 and saved settings can't tell a choice from the
+    // default, so it moves to the new default once; whoever wants glow back picks it again.
+    if (!stored.softStyle && saved.style === 'glow') saved.style = 'soft'
+    return saved
   } catch {
     return DEFAULTS
   }

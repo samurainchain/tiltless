@@ -6,6 +6,7 @@ import './design/tokens.css'
 import './design/base.css'
 import './design/components.css'
 import './design/glow.css'
+import './design/soft.css'
 import { LandingPage } from './features/landing/LandingPage'
 import { I18nProvider } from './i18n/i18n'
 

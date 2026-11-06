@@ -700,6 +700,7 @@ export const en = {
   'profile.themeLight': 'Light',
   'appearance.title': 'Appearance',
   'appearance.style': 'Style',
+  'appearance.style.soft': 'Soft',
   'appearance.style.glow': 'Glow',
   'appearance.style.flat': 'Flat',
   'appearance.accent': 'Accent color',

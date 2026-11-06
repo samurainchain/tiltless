@@ -699,6 +699,7 @@ export const es: Messages = {
   'profile.themeLight': 'Claro',
   'appearance.title': 'Apariencia',
   'appearance.style': 'Estilo',
+  'appearance.style.soft': 'Suave',
   'appearance.style.glow': 'Brillo',
   'appearance.style.flat': 'Sobrio',
   'appearance.accent': 'Color de acento',

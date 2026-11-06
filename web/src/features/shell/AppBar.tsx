@@ -79,6 +79,7 @@ export function AppBar() {
               </div>
               <p className="label popover__heading">{t('appearance.style')}</p>
               <div role="radiogroup" aria-label={t('appearance.style')} className="popover__options">
+                {option(settings.style === 'soft', t('appearance.style.soft'), () => updateSettings({ style: 'soft' }), stay)}
                 {option(settings.style === 'glow', t('appearance.style.glow'), () => updateSettings({ style: 'glow' }), stay)}
                 {option(settings.style === 'flat', t('appearance.style.flat'), () => updateSettings({ style: 'flat' }), stay)}
               </div>

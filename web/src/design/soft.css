@@ -1,0 +1,222 @@
+/* The "soft" style (data-style='soft' on <html>, the default since November 2026), after the
+   owner's reference, Obsidian's settings: calm neutral greys instead of near-black, grouped
+   panels with large radii and no outlines, raised grey buttons, a bordered pill for the current
+   page, plain sentence-case section titles instead of small uppercase monospace labels, and
+   switches instead of checkboxes. It changes surfaces, shapes and type only: the accent, profit
+   and loss colors stay the tokens' own, and every text pair keeps WCAG AA. */
+
+:root[data-style='soft'] {
+  --color-background: #1e1e1e;
+  --color-surface: #262626;
+  --color-surface-elevated: #2a2a2a;
+  --color-border: #333333;
+  --color-border-strong: #3f3f3f;
+  --color-border-control: #7a7a7a;
+  --color-separator: #333333;
+  --color-text-primary: #e8e8e8;
+  --color-text-secondary: #a3a3a3;
+  --soft-sidebar: #262626;
+  --soft-button: #363636;
+  --soft-button-hover: #3f3f3f;
+  --soft-raise: 0 1px 2px rgb(0 0 0 / 35%), inset 0 1px 0 rgb(255 255 255 / 4%);
+  --soft-switch-off: #4a4a4a;
+  --soft-knob: #ffffff;
+  --radius-card: 14px;
+  --radius-button: 8px;
+  --radius-field: 8px;
+  --radius-small: 6px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-style='soft']:not([data-theme='dark']) {
+    --color-background: #f5f5f5;
+    --color-surface: #ffffff;
+    --color-surface-elevated: #ffffff;
+    --color-border: #e3e3e3;
+    --color-border-strong: #d4d4d4;
+    --color-separator: #e3e3e3;
+    --color-text-primary: #222222;
+    --color-text-secondary: #5c5c5c;
+    --soft-sidebar: #ebebeb;
+    --soft-button: #ffffff;
+    --soft-button-hover: #f0f0f0;
+    --soft-raise: 0 1px 2px rgb(0 0 0 / 12%), 0 0 0 1px rgb(0 0 0 / 6%);
+    --soft-switch-off: #cfcfcf;
+  }
+}
+
+:root[data-style='soft'][data-theme='light'] {
+  --color-background: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-border: #e3e3e3;
+  --color-border-strong: #d4d4d4;
+  --color-separator: #e3e3e3;
+  --color-text-primary: #222222;
+  --color-text-secondary: #5c5c5c;
+  --soft-sidebar: #ebebeb;
+  --soft-button: #ffffff;
+  --soft-button-hover: #f0f0f0;
+  --soft-raise: 0 1px 2px rgb(0 0 0 / 12%), 0 0 0 1px rgb(0 0 0 / 6%);
+  --soft-switch-off: #cfcfcf;
+}
+
+/* Panels: one flat grouped surface, no outline. */
+:root[data-style='soft'] .card,
+:root[data-style='soft'] .list-card {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+:root[data-style='soft'] .card {
+  padding: var(--space-l);
+}
+
+/* Buttons: raised grey, no outline; primary keeps the accent fill. */
+:root[data-style='soft'] .button,
+:root[data-style='soft'] .icon-button {
+  border-color: transparent;
+  background: var(--soft-button);
+  box-shadow: var(--soft-raise);
+  color: var(--color-text-primary);
+}
+
+:root[data-style='soft'] .button:hover:not(:disabled),
+:root[data-style='soft'] .icon-button:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--soft-button-hover);
+}
+
+:root[data-style='soft'] .button--primary {
+  background: var(--color-accent-fill);
+  color: var(--color-accent-contrast);
+}
+
+:root[data-style='soft'] .button--primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent-fill) 88%, var(--color-text-primary));
+}
+
+:root[data-style='soft'] .button--danger {
+  color: var(--color-loss);
+}
+
+:root[data-style='soft'] .button--plain {
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-accent);
+}
+
+/* Fields and selects take the buttons' fill, as Obsidian's dropdowns do, and keep the control
+   edge so they stay recognisable (WCAG 1.4.11). */
+:root[data-style='soft'] .input {
+  background: var(--soft-button);
+  box-shadow: var(--soft-raise);
+}
+
+:root[data-style='soft'] .input:focus {
+  border-color: var(--color-accent);
+}
+
+:root[data-style='soft'] .segmented {
+  border-color: transparent;
+  background: var(--color-surface);
+}
+
+:root[data-style='soft'] .segmented__option[aria-checked='true'] {
+  border-color: var(--color-border-control);
+  background: var(--soft-button);
+  box-shadow: var(--soft-raise);
+}
+
+/* Section titles and labels: plain sentence case in the text face, not uppercase monospace. */
+:root[data-style='soft'] .section-header h2 {
+  font-family: var(--font-body);
+  font-size: var(--text-headline);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-text-primary);
+}
+
+:root[data-style='soft'] :is(
+    .label,
+    .page-header__subtitle,
+    .metric > .caption,
+    .stat dt,
+    .today-summary > .caption:first-child,
+    .week-mistake > .caption:first-child,
+    .focus-card > .caption:first-child,
+    .challenge-card > .caption:first-child,
+    .brief-card > .caption:first-child,
+    .checkin-card > .caption:first-child,
+    .session-clock > .caption:first-child,
+    .trade-summary > .caption:first-child,
+    .dash-widget__title,
+    .streak,
+    .checkin__part
+  ) {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Desktop sidebar: its own grey column; the current page is a bordered pill. */
+@media (min-width: 900px) {
+  :root[data-style='soft'] .sidebar {
+    border-right-color: transparent;
+    background: var(--soft-sidebar);
+  }
+
+  :root[data-style='soft'] .sidebar .nav-link {
+    border-radius: 10px;
+  }
+
+  :root[data-style='soft'] .sidebar .nav-link:hover {
+    background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  }
+
+  :root[data-style='soft'] .sidebar .nav-link[aria-current='page'] {
+    border-color: var(--color-border-strong);
+    background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+  }
+}
+
+:root[data-style='soft'] .tabbar {
+  border-top-color: var(--color-border);
+}
+
+/* On/off settings as switches: a pill with a knob, the accent when on. Drawn with gradients,
+   since a checkbox can't hold pseudo-elements in every browser. */
+:root[data-style='soft'] .toggle-row input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 40px;
+  height: 22px;
+  margin-top: 0;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--color-border-control);
+  background:
+    radial-gradient(circle at 11px 50%, var(--soft-knob) 0 8px, transparent 8.5px),
+    var(--soft-switch-off);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+:root[data-style='soft'] .toggle-row input[type='checkbox']:checked {
+  background:
+    radial-gradient(circle at 29px 50%, var(--soft-knob) 0 8px, transparent 8.5px),
+    var(--color-accent-fill);
+  box-shadow: none;
+}
+
+:root[data-style='soft'] .toggle-row input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+:root[data-style='soft'] .toggle-row input[type='checkbox']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

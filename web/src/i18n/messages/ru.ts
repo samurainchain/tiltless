@@ -701,6 +701,7 @@ export const ru: Messages = {
   'profile.themeLight': 'Светлая',
   'appearance.title': 'Оформление',
   'appearance.style': 'Стиль',
+  'appearance.style.soft': 'Мягкий',
   'appearance.style.glow': 'Свечение',
   'appearance.style.flat': 'Строгий',
   'appearance.accent': 'Цвет акцента',

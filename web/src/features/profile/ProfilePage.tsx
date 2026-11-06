@@ -133,6 +133,7 @@ export function ProfilePage() {
         </Field>
         <Field label={t('appearance.style')} htmlFor={ids.style}>
           <select id={ids.style} className="input" value={settings.style} onChange={(event) => updateSettings({ style: event.target.value as StyleSetting })}>
+            <option value="soft">{t('appearance.style.soft')}</option>
             <option value="glow">{t('appearance.style.glow')}</option>
             <option value="flat">{t('appearance.style.flat')}</option>
           </select>
