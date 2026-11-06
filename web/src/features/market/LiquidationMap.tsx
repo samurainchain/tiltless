@@ -327,7 +327,7 @@ function Plot({
     context.restore()
 
     // Axes.
-    context.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace'
+    context.font = `11px ${getComputedStyle(element).getPropertyValue('--font-mono').trim() || 'monospace'}`
     context.fillStyle = colors.muted
     context.textBaseline = 'middle'
     const priceShown = full.price >= view.min && full.price <= view.max

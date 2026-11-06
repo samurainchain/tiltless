@@ -69,7 +69,7 @@ function serviceWorker(): Plugin {
     apply: 'build',
     generateBundle(_options, bundle) {
       const files = Object.keys(bundle).filter((name) => !name.startsWith('tesseract/') && !name.endsWith('.map'))
-      const precache = [...files, 'manifest.webmanifest', 'favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png'].map((name) => `./${name}`)
+      const precache = [...files, 'manifest.webmanifest', 'favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'fonts/Geist-Variable.woff2', 'fonts/GeistMono-Variable.woff2'].map((name) => `./${name}`)
       const buildId = Date.now().toString(36)
       const source = readFileSync(new URL('./src/serviceWorker.js', import.meta.url), 'utf8')
       const header = `self.BUILD_ID = ${JSON.stringify(buildId)}\nself.PRECACHE = ${JSON.stringify(precache)}\n`

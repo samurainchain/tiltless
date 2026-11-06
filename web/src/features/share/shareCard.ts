@@ -75,8 +75,8 @@ export const COLORS = {
   leakSurface: '#1f1414',
   leakBorder: '#4a2626',
 }
-export const SANS = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-export const MONO = "ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace"
+export const SANS = "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+export const MONO = "'Geist Mono', ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace"
 
 /** Sets a font, shrinking it until the text fits the width. */
 export function fit(ctx: CanvasRenderingContext2D, text: string, weight: number, size: number, family: string, maxWidth: number): number {
