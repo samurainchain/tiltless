@@ -704,6 +704,7 @@ export const ru: Messages = {
   'appearance.style.soft': 'Мягкий',
   'appearance.style.glow': 'Свечение',
   'appearance.style.flat': 'Строгий',
+  'appearance.style.graphite': 'Графит',
   'appearance.accent': 'Цвет акцента',
   'appearance.accent.green': 'Изумрудный',
   'appearance.accent.amber': 'Янтарный',

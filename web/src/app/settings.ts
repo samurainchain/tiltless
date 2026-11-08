@@ -4,7 +4,7 @@ import type { WeekStart } from '../core/stats'
 export type LanguageSetting = 'system' | 'en' | 'ru' | 'es'
 export type ThemeSetting = 'system' | 'dark' | 'light'
 export type WeekStartSetting = 'auto' | 'monday' | 'sunday'
-export type StyleSetting = 'soft' | 'glow' | 'flat'
+export type StyleSetting = 'soft' | 'glow' | 'flat' | 'graphite'
 export const ACCENTS = ['green', 'amber', 'violet', 'blue', 'pink'] as const
 export type AccentSetting = (typeof ACCENTS)[number]
 /** `all` or an account id. */
@@ -14,7 +14,7 @@ export interface Settings {
   language: LanguageSetting
   theme: ThemeSetting
   /** Soft (calm greys and rounded panels, the default), glow (the accent's light behind the page
-   *  and on what's active) or flat. */
+   *  and on what's active), flat, or graphite (flat's colors with big rounded cards). */
   style: StyleSetting
   /** Set once the soft style became the default for this browser (see read). */
   softStyle?: true

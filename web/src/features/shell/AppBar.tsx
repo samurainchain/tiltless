@@ -82,6 +82,7 @@ export function AppBar() {
                 {option(settings.style === 'soft', t('appearance.style.soft'), () => updateSettings({ style: 'soft' }), stay)}
                 {option(settings.style === 'glow', t('appearance.style.glow'), () => updateSettings({ style: 'glow' }), stay)}
                 {option(settings.style === 'flat', t('appearance.style.flat'), () => updateSettings({ style: 'flat' }), stay)}
+                {option(settings.style === 'graphite', t('appearance.style.graphite'), () => updateSettings({ style: 'graphite' }), stay)}
               </div>
               <p className="label popover__heading">{t('appearance.accent')}</p>
               <AccentPicker />

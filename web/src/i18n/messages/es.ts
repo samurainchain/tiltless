@@ -702,6 +702,7 @@ export const es: Messages = {
   'appearance.style.soft': 'Suave',
   'appearance.style.glow': 'Brillo',
   'appearance.style.flat': 'Sobrio',
+  'appearance.style.graphite': 'Grafito',
   'appearance.accent': 'Color de acento',
   'appearance.accent.green': 'Esmeralda',
   'appearance.accent.amber': 'Ámbar',

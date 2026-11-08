@@ -128,8 +128,9 @@
   box-shadow: var(--soft-raise);
 }
 
-/* Section titles and labels: plain sentence case in the text face, not uppercase monospace. */
-:root[data-style='soft'] .section-header h2 {
+/* Section titles and labels: plain sentence case in the text face, not uppercase monospace.
+   Graphite (graphite.css) shares these two rules. */
+:root:is([data-style='soft'], [data-style='graphite']) .section-header h2 {
   font-family: var(--font-body);
   font-size: var(--text-headline);
   font-weight: 600;
@@ -138,7 +139,7 @@
   color: var(--color-text-primary);
 }
 
-:root[data-style='soft'] :is(
+:root:is([data-style='soft'], [data-style='graphite']) :is(
     .label,
     .page-header__subtitle,
     .metric > .caption,

@@ -703,6 +703,7 @@ export const en = {
   'appearance.style.soft': 'Soft',
   'appearance.style.glow': 'Glow',
   'appearance.style.flat': 'Flat',
+  'appearance.style.graphite': 'Graphite',
   'appearance.accent': 'Accent color',
   'appearance.accent.green': 'Emerald',
   'appearance.accent.amber': 'Amber',

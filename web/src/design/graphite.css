@@ -1,0 +1,66 @@
+/* The "graphite" style (data-style='graphite' on <html>), after the Supabase home page the owner
+   showed: the same near-black and thin borders as flat, but roomier. Big rounded cards lit a
+   little from the top, sentence-case card titles in the text face (shared with soft.css), light
+   large page titles, quiet dark buttons beside the accent one. Surfaces, shapes and type only:
+   the theme's own tokens stay, so tokens.css's contrast tests cover it. */
+
+:root[data-style='graphite'] {
+  --radius-card: 16px;
+  --radius-button: 8px;
+  --radius-field: 8px;
+  --radius-small: 6px;
+  --graphite-card: linear-gradient(180deg, var(--color-surface-elevated) 0%, var(--color-surface) 45%);
+}
+
+/* Cards: a thin outline and a faint light from the top edge. */
+:root[data-style='graphite'] .card,
+:root[data-style='graphite'] .list-card {
+  border-color: var(--color-border);
+  background: var(--graphite-card);
+}
+
+:root[data-style='graphite'] .card {
+  padding: var(--space-l);
+}
+
+/* Card titles read as titles: text face, primary color, a size up. */
+:root[data-style='graphite'] .dash-widget__title {
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+}
+
+/* Page titles: large and light, like the home page's headline. */
+:root[data-style='graphite'] .page-header__title {
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+/* Buttons: quiet dark ones with an outline; the accent one stays filled. */
+:root[data-style='graphite'] .button {
+  padding-inline: var(--space-l);
+}
+
+:root[data-style='graphite'] :is(.button--secondary, .button--danger, .icon-button) {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+:root[data-style='graphite'] :is(.button--secondary, .button--danger, .icon-button):hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+}
+
+:root[data-style='graphite'] .button--plain {
+  padding-inline: var(--space-xs);
+}
+
+/* Desktop sidebar: the page's own background behind a hairline; the current page is outlined. */
+@media (min-width: 900px) {
+  :root[data-style='graphite'] .sidebar {
+    background: var(--color-background);
+  }
+
+  :root[data-style='graphite'] .sidebar .nav-link[aria-current='page'] {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface);
+  }
+}

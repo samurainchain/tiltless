@@ -136,6 +136,7 @@ export function ProfilePage() {
             <option value="soft">{t('appearance.style.soft')}</option>
             <option value="glow">{t('appearance.style.glow')}</option>
             <option value="flat">{t('appearance.style.flat')}</option>
+            <option value="graphite">{t('appearance.style.graphite')}</option>
           </select>
         </Field>
         <div className="field">
