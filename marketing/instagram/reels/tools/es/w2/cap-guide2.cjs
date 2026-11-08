@@ -1,0 +1,24 @@
+const { chromium } = require('playwright');
+const DEMO = __dirname + '/../../checkin-story.json';
+const O = __dirname + '/guide/';
+const NAMES = ['Binance', 'Bybit', 'OKX', 'BingX', 'Interactive Brokers', 'IBKR', 'Bitget', 'MEXC', 'Coinbase', 'Kraken', 'TradingView'];
+(async () => {
+  const b = await chromium.launch();
+  const mk = async () => (await b.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, locale: 'es-MX', colorScheme: 'dark', timezoneId: 'UTC' })).newPage();
+  let page = await mk();
+  await page.goto('http://localhost:4175/'); await page.waitForTimeout(2500);
+  const hit = await page.evaluate((names) => { let n = []; for (const e of document.querySelectorAll('body *')) { if (e.children.length) continue; const t = (e.textContent || '').trim(); if (names.some((x) => t.includes(x))) { e.style.filter = 'blur(7px)'; n.push(t.slice(0, 60)) } } return n }, NAMES);
+  console.log('blurred', JSON.stringify(hit));
+  await page.screenshot({ path: O + 'landing-full.png', fullPage: true });
+  page = await mk();
+  await page.goto('http://localhost:4175/app/'); await page.locator('.onboarding input[type=file]').setInputFiles(DEMO); await page.waitForTimeout(1500);
+  const boxes = (sel) => page.evaluate((s) => [...document.querySelectorAll(s)].map((e) => { const r = e.getBoundingClientRect(); return [e.className.toString().slice(0, 40), (e.innerText || '').replace(/\n/g, ' | ').slice(0, 90), Math.round(r.x), Math.round(r.y + scrollY), Math.round(r.width), Math.round(r.height)] }), sel);
+  await page.goto('http://localhost:4175/app/#/today'); await page.locator('main h1').waitFor(); await page.waitForTimeout(1300);
+  await page.screenshot({ path: O + 'today-full.png', fullPage: true });
+  console.log('today', JSON.stringify(await boxes('main .card, main section')));
+  await page.goto('http://localhost:4175/app/#/review/2026-10-26'); await page.locator('main h1').waitFor(); await page.waitForTimeout(1300);
+  console.log('review text', (await page.locator('main').innerText()).replace(/\n/g, ' | ').slice(0, 300));
+  await page.screenshot({ path: O + 'review-full.png', fullPage: true });
+  console.log('review', JSON.stringify(await boxes('main .card, main section, main fieldset')));
+  await b.close();
+})().catch(e => { console.error(e); process.exit(1); });

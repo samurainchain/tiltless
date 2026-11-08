@@ -14,7 +14,7 @@ Once the owner sends views, watch time and saves, /ig-audit decides which shape 
 | day | time (CDMX) | format | type | hook | angle |
 | --- | --- | --- | --- | --- | --- |
 | Mon Nov 9 | — | stories + engage | | | |
-| Tue Nov 10 | 7:30 pm | REEL (ES, screen demo) | TEACH | #18 Cold Open Demo | 08 "Sube 1 captura y 6 campos se llenan solos." A Spanish exchange screenshot (synthetic, web/test-fixtures/ocr/*Es-*, never a real one) dropped into the entry form, the fields fill in. Reel 05 was held for this: the reader now reads Spanish screens. No time claims we haven't measured. |
+| Tue Nov 10 | 7:30 pm | REEL (ES, guide) | TEACH | Cold Open Demo | 08 "Tu diario de trading en 4 pasos": fly-over of the landing page, the welcome questions, logging a trade, the mistakes table, the worst-hour reminder and the weekly habit (owner's request on Nov 8; the screenshot-reader reel moved to spare 08b). |
 | Wed Nov 11 | 7:30 pm | REEL (voiced, ES) | OPINION | #22 Contrarian Flip | 09 "Con 52% de acierto, tus errores te costaron $1,340." Position 4 of voice.md: the demo month's 52% and +$255, then the mistakes table in dollars (−$1,340). |
 | Thu Nov 12 | 7:30 pm | CAROUSEL (ES) | TEACH | cover: #11 Numbered With A Favourite | "7 formas de entrar en tilt (la 4 es la más cara)": posts/01-7-ways-traders-tilt.md translated to Mexican Spanish, 1080×1350. |
 | Fri Nov 13 | 7:30 pm | REEL (voiced, ES) | PROOF | #6 The Receipt | 10 "Las 8 de la noche te costaron $800 este mes." The demo journal's "PnL por hora de entrada" chart: the hour where the month's losses gather, in dollars, and the trades tagged "Mala hora". |

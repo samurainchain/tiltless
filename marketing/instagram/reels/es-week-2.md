@@ -9,9 +9,43 @@ Voice: Higgsfield had no credits left on Nov 8, so these three are voiced with P
 voice from 02–07. Sources: tools/es/w2/ (lines.py voices and times the lines, buildw2.py builds the
 3D stages on the week-1 engine in tools/es/x3d/, render-all.sh renders and mixes).
 
-## 08: Sube 1 captura (Tue Nov 10, TEACH, #18 Cold Open Demo)
+## 08: Tu diario de trading en 4 pasos (Tue Nov 10, TEACH, guide)
 
-`tiltless-es-08-3d.mp4`, cover `cover-es-08-3d.jpg`, 30 s. A synthetic exchange screenshot
+Replaced the screenshot-reader reel on Nov 8 at the owner's request: a fly-over of the landing page,
+the welcome questions at the app's entrance, and a short tour of the site.
+`tiltless-es-08-3d.mp4`, cover `cover-es-08-3d.jpg`, 34 s. Four numbered tiles (Entra, Responde,
+Registra, Mira); a fly-over of tiltless.xyz (exchange names on the page blurred: no exchange names in
+ads); the welcome questions answered one by one (goal, markets with the venue chips blurred,
+weaknesses, trades per week, the profile insight); a screenshot drops into the entry form and it
+fills; then three cards in space: the mistakes table, Today's "worst hour" reminder, and the weekly
+review's habit to fix. Demo journal numbers, labelled demo.
+
+Instagram:
+```
+Tu diario de trading en 4 pasos:
+1. Entra a tiltless.xyz. El diario es gratis y no pide tarjeta.
+2. Responde 4 preguntas: qué buscas, qué operas, dónde pierdes más y cuántas operaciones haces.
+3. Registra tus operaciones a mano o con una captura de pantalla.
+4. Mira qué te cuesta cada error, en dólares.
+
+Antes de operar te recuerda tu peor hora, y cada semana eliges un hábito a corregir. Los números del video son de un mes de demostración.
+
+Link en la bio.
+
+#trading #daytrading #diariodetrading
+```
+
+TikTok:
+```
+Tu diario de trading en 4 pasos: entra, responde 4 preguntas, registra tus operaciones (a mano o con una captura) y mira qué te cuesta cada error. Gratis. Link en la bio.
+
+#trading #daytrading #diariodetrading #traderslatinos #tradingmexico
+```
+
+## 08b (spare): Sube 1 captura (TEACH, #18 Cold Open Demo)
+
+Made for Tue Nov 10, replaced by the guide; kept for a later week.
+`tiltless-es-08b-3d.mp4`, cover `cover-es-08b-3d.jpg`, 30 s. A synthetic exchange screenshot
 (web/test-fixtures/ocr/56, never a real one) floats with its six fields flying out of it, drops
 into the desktop entry form, and the fields light up as they are named; −$128.44 slams in; Save;
 "5 lecturas / mes · Gratis" and "Sin límite · Pro" turn over a grid floor.

@@ -36,6 +36,19 @@ R = {
   ('Tiltless marca cada operación en tu mala hora.', 'Tíltles marca cada operación en tu mala hora.'),
   ('Encuentra tu hora. Link en la bio.', 'Encuentra tu hora. Link, en la bio.'),
  ],
+ '08g': [
+  ('Tu diario de trading en 4 pasos.', 'Tu diario de trading, en cuatro pasos.'),
+  ('1. Entra a tiltless.xyz.', 'Uno. Entra a la página de Tíltles.'),
+  ('El diario es gratis y no pide tarjeta.', 'El diario es gratis, y no pide tarjeta.'),
+  ('2. Responde 4 preguntas.', 'Dos. Responde cuatro preguntas.'),
+  ('Qué buscas, qué operas, dónde pierdes más.', 'Qué buscas. Qué operas. Dónde pierdes más.'),
+  ('Y cuántas operaciones haces por semana.', 'Y cuántas operaciones haces por semana.'),
+  ('3. Registra tus operaciones: a mano o con una captura.', 'Tres. Registra tus operaciones: a mano, o con una captura.'),
+  ('4. Mira qué te cuesta cada error, en dólares.', 'Cuatro. Mira qué te cuesta cada error, en dólares.'),
+  ('Antes de operar, te recuerda tu peor hora.', 'Antes de operar, te recuerda tu peor hora.'),
+  ('Y cada semana, un hábito a corregir.', 'Y cada semana, un hábito a corregir.'),
+  ('El diario es gratis. Link en la bio.', 'El diario es gratis. Link, en la bio.'),
+ ],
 }
 LEAD, GAP = 0.25, 0.32
 PIPER = '../../penv/bin/piper'; MODEL = '../../piper/es_MX-claude-high.onnx'
