@@ -369,13 +369,15 @@ if (show('end', t, L[7] - .05, 999)) {{ const l = prog(t, L[7], L[7] + .6); $('e
 # ---------------------------------------------------------------- 08 (guide): the site in four steps
 def reel_guide():
     r = R('08g'); L, W = r.L, r.W
-    END = r.end() + 0.9
+    END = r.end() + 1.0
     G = 'w2/guide/'
-    OB = ['ob-0-welcome', 'ob-1-goal-on', 'ob-2-markets-on', 'ob-3-weak-on', 'ob-4-freq-on', 'ob-5-insight']
+    OB = ['ob-0-welcome', 'ob-1-goal', 'ob-1-goal-on', 'ob-2-markets-on', 'ob-3-weak-on', 'ob-4-freq-on', 'ob-5-insight']
     stack = ''.join(f'<img id="ob{i}" src="{G}{n}.png" style="position:absolute;left:0;top:44px;width:1440px;opacity:0">' for i, n in enumerate(OB[1:], 1))
     steps = [('1', 'Entra'), ('2', 'Responde'), ('3', 'Registra'), ('4', 'Mira')]
     tiles = ''.join(f'<div class="tile" id="st{i}"><b>{n}</b><span>{w}</span></div>' for i, (n, w) in enumerate(steps))
     shade = '<div style="position:absolute;left:0;right:0;top:0;height:600px;background:linear-gradient(#121212f2 60%,#12121200);z-index:2"></div>'
+    boxes = (hl('b0', 457, 305, 526, 41) + hl('b1', 441, 351, 503, 46) + hl('b3', 457, 522, 257, 41) + hl('b4', 726, 522, 257, 41)
+             + hl('b5', 457, 663, 371, 41) + hl('bc', 457, 176, 526, 41) + hl('bs', 441, 783, 508, 40))
     body = f"""<style>.scene .tile, .scene .tile *, .scene .card3, .scene .card3 * {{ transform-style:flat }} .card3 {{ position:absolute; left:0; top:0 }}
 .tile {{ position:absolute; left:0; top:0; width:330px; height:250px; border-radius:36px; border:3px solid #3ecf8e; background:#121212ee; box-shadow:0 0 60px #3ecf8e55, 0 40px 90px -10px #000; opacity:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px }}
 .tile b {{ font:800 120px 'JetBrains Mono', monospace; color:#3ecf8e; line-height:1; text-shadow:0 0 40px #3ecf8e88 }} .tile span {{ font:700 46px Inter, sans-serif; color:#ededed }}</style>
@@ -391,8 +393,9 @@ def reel_guide():
 </div>
 <div id="s3" class="layer stage3d" style="perspective:1400px;perspective-origin:540px 900px">{shade}
   <div class="scene" id="sc3">
-    {win('w3', 'app/#/today', SH + 'entry-empty.png', f'<img id="w3-fill" src="{SH}entry-filled.png" style="position:absolute;left:0;top:44px;width:1440px;opacity:0"><div class="ripple" id="rip"></div>')}
+    {win('w3', 'app/#/today', SH + 'entry-empty.png', f'<img id="w3-run" src="{SH}entry-running.png" style="position:absolute;left:0;top:44px;width:1440px;opacity:0"><img id="w3-fill" src="{SH}entry-filled.png" style="position:absolute;left:0;top:44px;width:1440px;opacity:0">' + boxes + CURSOR.format(id='cur') + '<div class="ripple" id="rip"></div>')}
     <img id="drop" src="w2/56-okxAppEs-dark.png" style="position:absolute;left:0;top:0;width:600px;border-radius:24px;border:3px solid #3ecf8e;box-shadow:0 0 80px #3ecf8e88;opacity:0">
+    {tag('saved', 'g', 'Guardada', '✓', 'font-size:64px')}
   </div>
 </div>
 <div id="s4" class="layer stage3d" style="perspective:1400px;perspective-origin:540px 900px">
@@ -404,80 +407,103 @@ def reel_guide():
   </div>
 </div>
 """
-    heads_html = h1s(['Tu diario de trading<br><span class="g">en 4 pasos.</span>', '<span class="g">1.</span> Entra a<br>tiltless.xyz', 'El diario es gratis<br>y no pide tarjeta.',
-                      '<span class="g">2.</span> Responde<br>4 preguntas.', 'Qué buscas, qué operas,<br>dónde pierdes más.', 'Y cuántas operaciones<br>haces por semana.',
-                      '<span class="g">3.</span> Registra<br>tus operaciones.', '<span class="g">4.</span> Mira qué te cuesta<br>cada error, <span class="r">en dólares.</span>',
-                      'Antes de operar,<br>te recuerda <span class="r">tu peor hora.</span>', 'Y cada semana,<br><span class="g">un hábito a corregir.</span>'])
+    heads_html = h1s(['Tu diario de trading<br><span class="g">en 4 pasos.</span>', '<span class="g">1.</span> Entra a<br>tiltless.xyz', 'Cómo funciona<br>y cuánto cuesta.', 'El diario es gratis<br>y no pide tarjeta.',
+                      '<span class="g">2.</span> Responde<br>4 preguntas.', 'Qué buscas, qué operas,<br>dónde pierdes más.', 'Y cuántas operaciones<br>haces por semana.', 'Con tus respuestas,<br>Tiltless prepara <span class="g">tu diario.</span>',
+                      '<span class="g">3.</span> Registra<br>tus operaciones.', 'A mano, o con una<br><span class="g">captura de pantalla.</span>', 'La sueltas<br>en el formulario.', 'Los campos<br><span class="g">se llenan solos.</span>', 'Revisas<br>y guardas.',
+                      '<span class="g">4.</span> Mira qué te cuesta<br>cada error, <span class="r">en dólares.</span>', 'Antes de operar,<br>te recuerda <span class="r">tu peor hora.</span>', 'Y cada semana,<br><span class="g">un hábito a corregir.</span>'])
     end_html = build.end_card('Tu diario de trading<br><span class="g">en 4 pasos.</span>', DEMO_SMALL)
     js = f"""
 const L = {json.dumps([l['s'] for l in r.lines])}
-labels(t, [[0, ''], [L[1] - .1, '<b>tiltless.xyz</b> · página principal'], [L[3] - .1, '<b>Bienvenida</b> · 4 preguntas'], [L[6] - .1, '<b>Nueva operación</b>'],
-  [L[7] - .1, '<b>Costo de los errores</b> · demo'], [L[8] - .1, '<b>Hoy</b> · antes de operar · demo'], [L[9] - .1, '<b>Revisión semanal</b> · demo'], [L[10] - .1, '']])
-heads(t, [[.3, 'hd0'], [L[1] - .1, 'hd1'], [L[2] - .1, 'hd2'], [L[3] - .1, 'hd3'], [L[4] - .1, 'hd4'], [L[5] - .1, 'hd5'], [L[6] - .1, 'hd6'], [L[7] - .1, 'hd7'], [L[8] - .1, 'hd8'], [L[9] - .1, 'hd9'], [L[10] - .1, null]])
-$('flash').style.opacity = flashAt(t, [[L[1] - .05, .12], [L[3] - .05, .12], [L[6] - .05, .12], [L[7] - .05, .12]])
+labels(t, [[0, ''], [L[1] - .1, '<b>tiltless.xyz</b> · página principal'], [L[4] - .1, '<b>Bienvenida</b> · 4 preguntas'], [L[8] - .1, '<b>Nueva operación</b>'],
+  [L[13] - .1, '<b>Costo de los errores</b> · demo'], [L[14] - .1, '<b>Hoy</b> · antes de operar · demo'], [L[15] - .1, '<b>Revisión semanal</b> · demo'], [L[16] - .1, '']])
+heads(t, [[.3, 'hd0'], ...Array.from({{ length: 15 }}, (_, i) => [L[i + 1] - .1, 'hd' + (i + 1)]), [L[16] - .1, null]])
+$('flash').style.opacity = flashAt(t, [[L[1] - .05, .12], [L[4] - .05, .12], [L[8] - .05, .12], [L[13] - .05, .12]])
 
 // Four numbered tiles, one per step.
 if (show('s0', t, 0, L[1] + .05, .2)) {{
   const c = track([[0, {{ x: 0, y: 0, z: -520, rx: 14, ry: -24, rz: 0 }}], [L[1] - .3, {{ x: 0, y: 0, z: -380, rx: 8, ry: 12, rz: 0 }}], [L[1], {{ x: 0, y: 0, z: 400, rx: 0, ry: 0, rz: 0 }}, 'expo']], t)
   $('sc0').style.transform = $('sc0f').style.transform = camCss(c)
   const P = [[-350, -270], [20, -270], [-350, 30], [20, 30]]
-  for (let i = 0; i < 4; i++) {{ const p = easeOutBack(clamp((t - .4 - i * .32) / .45)), el = $('st' + i)
+  for (let i = 0; i < 4; i++) {{ const p = easeOutBack(clamp((t - .4 - i * .4) / .5)), el = $('st' + i)
     el.style.opacity = clamp(p * 3); el.style.transform = `translate3d(${{P[i][0]}}px, ${{P[i][1]}}px, ${{(1 - p) * -600}}px) rotateY(${{(1 - p) * 70}}deg)` }}
 }}
 
-// A fly-over of the landing page.
-if (show('s1', t, L[1] - .1, L[3] - .05, .2)) {{
-  const sp = clamp((t - L[1] - .2) / (L[3] - L[1] - .4)); $('w1-img').style.transform = `translateY(${{-ease(sp) * 4600}}px)`
-  const c = track([[L[1] - .1, {{ x: 720, y: 472, z: -1400, rx: 50, ry: -30, rz: -6 }}], [L[1] + .9, {{ x: 720, y: 520, z: -420, rx: 38, ry: -12, rz: -2 }}, 'expo'], [L[2], {{ x: 720, y: 540, z: -380, rx: 34, ry: 6, rz: 0 }}], [L[3], {{ x: 720, y: 520, z: -460, rx: 30, ry: 16, rz: 2 }}]], t)
+// A slow fly-over of the landing page: hero, how it works, prices.
+if (show('s1', t, L[1] - .1, L[4] - .05, .2)) {{
+  const sc = track([[L[1] + .4, {{ y: 0 }}], [L[2], {{ y: 700 }}], [L[2] + 1.6, {{ y: 1250 }}], [L[3] - .3, {{ y: 3150 }}], [L[4] - .2, {{ y: 3300 }}]], t).y
+  $('w1-img').style.transform = `translateY(${{-sc}}px)`
+  const c = track([[L[1] - .1, {{ x: 720, y: 472, z: -1400, rx: 50, ry: -30, rz: -6 }}], [L[1] + 1.0, {{ x: 720, y: 500, z: -300, rx: 30, ry: -10, rz: -2 }}, 'expo'], [L[3], {{ x: 720, y: 520, z: -260, rx: 26, ry: 6, rz: 0 }}], [L[4], {{ x: 720, y: 520, z: -320, rx: 24, ry: 14, rz: 2 }}]], t)
   $('sc1').style.transform = camCss(c)
 }}
 
 // The welcome questions, answered one after another.
-if (show('s2', t, L[3] - .1, L[6] - .05, .2)) {{
-  const c = track([[L[3] - .1, {{ x: 720, y: 472, z: -1300, rx: -26, ry: 34, rz: 4 }}], [L[3] + .8, {{ x: 720, y: 472, z: 60, rx: -4, ry: -10, rz: 0 }}, 'expo'], [L[5], {{ x: 720, y: 400, z: 160, rx: -2, ry: 8, rz: 0 }}], [L[6], {{ x: 720, y: 400, z: 200, rx: 2, ry: 14, rz: 0 }}]], t)
+if (show('s2', t, L[4] - .1, L[8] - .05, .2)) {{
+  const c = track([[L[4] - .1, {{ x: 720, y: 472, z: -1300, rx: -26, ry: 34, rz: 4 }}], [L[4] + .9, {{ x: 720, y: 440, z: 180, rx: -4, ry: -8, rz: 0 }}, 'expo'], [L[6], {{ x: 720, y: 400, z: 230, rx: -2, ry: 6, rz: 0 }}], [L[8], {{ x: 720, y: 380, z: 260, rx: 2, ry: 12, rz: 0 }}]], t)
   $('sc2').style.transform = camCss(c)
-  const at = [L[3] + .9, {W(4, 0)}, {W(4, 2)}, {W(4, 4)}, L[5] + .1, L[5] + 1.6]
-  for (let i = 1; i < 6; i++) $('ob' + i).style.opacity = clamp((t - at[i - 1]) / .15) * (i < 5 ? 1 - clamp((t - at[i]) / .15) * 0 : 1)
-  const last = at.filter((a) => t >= a).pop() || 0, sw = clamp((t - last) / .5); $('w2-sweep').style.opacity = t > at[0] && sw < 1 ? 1 : 0; $('w2-sweep').style.transform = `translateX(${{-600 + sw * 1600}}px)`
+  const at = [L[4] + 1.0, {W(5, 1)}, {W(5, 3)}, {W(5, 6)}, {W(6, 5)}, L[7] + .1]
+  for (let i = 1; i < 7; i++) $('ob' + i).style.opacity = clamp((t - at[i - 1]) / .2)
+  const last = at.filter((a) => t >= a).pop() || 0, sw = clamp((t - last) / .6); $('w2-sweep').style.opacity = t > at[0] && sw < 1 ? 1 : 0; $('w2-sweep').style.transform = `translateX(${{-600 + sw * 1600}}px)`
 }}
 
-// Logging a trade: the screenshot drops in and the form fills.
-if (show('s3', t, L[6] - .1, L[7] - .05, .2)) {{
-  const c = track([[L[6] - .1, {{ x: 720, y: 472, z: -1300, rx: 30, ry: -30, rz: -4 }}], [L[6] + .8, {{ x: 720, y: 472, z: -520, rx: 6, ry: -8, rz: 0 }}, 'expo'], [L[7], {{ x: 700, y: 44 + 420, z: 40, rx: 4, ry: 6, rz: 0 }}]], t)
+// Logging a trade from a screenshot, slowly: the button, the drop, the reading, each field, Save.
+if (show('s3', t, L[8] - .1, L[13] - .05, .2)) {{
+  const c = track([
+    [L[8] - .1, {{ x: 720, y: 472, z: -1300, rx: 30, ry: -30, rz: -4 }}],
+    [L[8] + .9, {{ x: 720, y: 472, z: -560, rx: 6, ry: -8, rz: 0 }}, 'expo'],
+    [L[9], {{ x: 720, y: 472, z: -540, rx: 4, ry: -4, rz: 0 }}],
+    [L[9] + .9, {{ x: 720, y: 44 + 200, z: 150, rx: 4, ry: -6, rz: 0 }}],
+    [L[10] + .8, {{ x: 720, y: 44 + 260, z: 60, rx: 4, ry: 4, rz: 0 }}],
+    [L[11], {{ x: 700, y: 44 + 360, z: 200, rx: 3, ry: -8, rz: 0 }}],
+    [{W(11, 2)}, {{ x: 700, y: 44 + 560, z: 200, rx: 3, ry: 6, rz: 0 }}],
+    [L[12], {{ x: 690, y: 44 + 680, z: 60, rx: 3, ry: 0, rz: 0 }}],
+    [L[13], {{ x: 720, y: 472, z: -520, rx: 8, ry: 10, rz: 0 }}],
+  ], t)
   $('sc3').style.transform = camCss(c)
-  const da = {W(6, 9)} - .3, dp = clamp((t - da) / .5), d = $('drop')
+  // Cursor: to "Desde captura" on the word captura, later to Save.
+  const k = $('cur'), c1 = {W(9, 5)}, c2 = {W(12, 2)}
+  const kx = t < L[12] ? lerp(1150, 720, ease(clamp((t - L[9]) / (c1 - L[9])))) : lerp(1000, 690, ease(clamp((t - L[12]) / (c2 - L[12]))))
+  const ky = t < L[12] ? lerp(1000, 44 + 196, ease(clamp((t - L[9]) / (c1 - L[9])))) : lerp(1000, 44 + 798, ease(clamp((t - L[12]) / (c2 - L[12]))))
+  k.style.left = kx + 'px'; k.style.top = ky + 'px'
+  k.style.opacity = (t > L[9] && t < c1 + .5 ? 1 : 0) || (t > L[12] && t < c2 + .5 ? 1 : 0)
+  k.style.transform = `scale(${{(t > c1 && t < c1 + .12) || (t > c2 && t < c2 + .12) ? .85 : 1}})`
+  $('bc').style.opacity = t > c1 && t < L[10] + .2 ? 1 : 0
+  const da = L[10] + .1, dp = clamp((t - da) / .7), d = $('drop')
   d.style.opacity = dp > 0 && dp < 1 ? 1 : 0
   d.style.transform = `translate3d(420px, ${{lerp(-900, 230, ease(dp))}}px, ${{lerp(500, 0, ease(dp))}}px) rotateX(${{(1 - dp) * 50}}deg) scale(${{lerp(1, .4, ease(dp))}})`
-  const rp = clamp((t - da - .5) / .6); $('rip').style.left = '720px'; $('rip').style.top = '520px'; $('rip').style.opacity = t > da + .5 ? 1 - rp : 0; $('rip').style.transform = `scale(${{.3 + rp * 2}})`
-  $('w3-fill').style.opacity = clamp((t - da - .7) / .2)
+  const rp = clamp((t - da - .7) / .6); $('rip').style.left = '720px'; $('rip').style.top = '520px'; $('rip').style.opacity = t > da + .7 ? 1 - rp : 0; $('rip').style.transform = `scale(${{.3 + rp * 2}})`
+  $('w3-run').style.opacity = t >= da + .7 && t < L[11] - .2 ? 1 : 0; $('w3-fill').style.opacity = clamp((t - L[11] + .2) / .2)
+  ;[['b0', {W(11, 0)}], ['b1', {W(11, 1)}], ['b3', {W(11, 2)}], ['b4', {W(11, 3)}], ['b5', {W(11, 5)}]].forEach(([id, a]) => {{ $(id).style.opacity = clamp((t - a + .05) / .15) * (1 - clamp((t - L[12] + .1) / .3)) }})
+  $('bs').style.opacity = t > c2 && t < c2 + .6 ? 1 : 0
+  const sp = easeOutBack(clamp((t - c2 - .3) / .5)); $('saved').style.opacity = clamp(sp * 3); $('saved').style.transform = `translate3d(560px, ${{44 + 700 - sp * 140}}px, ${{sp * 260}}px)`
 }}
 
 // Three cards in space: what each mistake cost, the worst hour before trading, the habit of the week.
-if (show('s4', t, L[7] - .1, L[10] - .05, .2)) {{
+if (show('s4', t, L[13] - .1, L[16] - .05, .2)) {{
   const c = track([
-    [L[7] - .1, {{ x: 0, y: 0, z: -1500, rx: 30, ry: -24, rz: 0 }}],
-    [L[7] + .9, {{ x: 0, y: 0, z: 300, rx: 4, ry: -8, rz: 0 }}, 'expo'],
-    [L[8] - .2, {{ x: 0, y: 0, z: 320, rx: 2, ry: 6, rz: 0 }}],
-    [L[8] + .6, {{ x: 0, y: 1400, z: 100, rx: -4, ry: 6, rz: 0 }}, 'expo'],
-    [L[9] - .2, {{ x: 0, y: 1400, z: 140, rx: -2, ry: -4, rz: 0 }}],
-    [L[9] + .6, {{ x: 0, y: 2800, z: 330, rx: -4, ry: -6, rz: 0 }}, 'expo'],
-    [L[10], {{ x: 0, y: 2800, z: 360, rx: -2, ry: 4, rz: 0 }}],
+    [L[13] - .1, {{ x: 0, y: 0, z: -1500, rx: 30, ry: -24, rz: 0 }}],
+    [L[13] + .9, {{ x: 0, y: 0, z: 300, rx: 4, ry: -8, rz: 0 }}, 'expo'],
+    [L[14] - .2, {{ x: 0, y: 0, z: 320, rx: 2, ry: 6, rz: 0 }}],
+    [L[14] + .6, {{ x: 0, y: 1400, z: 100, rx: -4, ry: 6, rz: 0 }}, 'expo'],
+    [L[15] - .2, {{ x: 0, y: 1400, z: 140, rx: -2, ry: -4, rz: 0 }}],
+    [L[15] + .6, {{ x: 0, y: 2800, z: 330, rx: -4, ry: -6, rz: 0 }}, 'expo'],
+    [L[16], {{ x: 0, y: 2800, z: 360, rx: -2, ry: 4, rz: 0 }}],
   ], t)
   $('sc4').style.transform = $('sc4f').style.transform = camCss(c)
-  ;[['p0', -291, -310, L[7] + .2], ['p1', -460, 1320, L[8]], ['p2', -290, 2742, L[9]]].forEach(([id, x, y, at]) => {{
+  ;[['p0', -291, -310, L[13] + .2], ['p1', -460, 1320, L[14]], ['p2', -290, 2742, L[15]]].forEach(([id, x, y, at]) => {{
     const p = easeOutBack(clamp((t - at) / .6)); $(id).style.opacity = clamp(p * 3); $(id).style.transform = `translate3d(${{x}}px, ${{y}}px, ${{(1 - p) * -400}}px) rotateX(${{(1 - p) * -40}}deg)` }})
 }}
-if (show('end', t, L[10] - .05, 999)) {{ const l = prog(t, L[10], L[10] + .6); $('end-logo').style.transform = `translateY(${{(1 - easeOutBounce(l)) * -300}}px)` }}
+if (show('end', t, L[16] - .05, 999)) {{ const l = prog(t, L[16], L[16] + .6); $('end-logo').style.transform = `translateY(${{(1 - easeOutBounce(l)) * -300}}px)` }}
 """
-    cues = [['whoosh', .1, .6, .3]] + [['thud', .45 + i * .32, .35] for i in range(4)] + [
-        ['whoosh', r.L(1) - .3, 1.1, .5], ['whoosh', r.L(2), 2.0, .8], ['whoosh', r.L(3) - .3, .9, .4],
-        ['click', r.L(3) + .9, .3], ['click', r.W(4, 0), .3], ['click', r.W(4, 2), .3], ['click', r.W(4, 4), .3], ['click', r.L(5) + .1, .3], ['pop', r.L(5) + 1.6, .3, 600],
-        ['whoosh', r.L(6) - .3, .9, .4], ['impact', r.W(6, 9) + .2, .4, 60], ['typing', r.W(6, 9) + .3, .1, 6],
-        ['whoosh', r.L(7) - .3, 1.0, .5], ['thud', r.L(7) + .3, .4], ['whoosh', r.L(8) - .1, .8, .35], ['pop', r.L(8) + .2, .3, 650],
-        ['whoosh', r.L(9) - .1, .8, .35], ['pop', r.L(9) + .2, .3, 800], ['laser', r.L(10) - .3, .5], ['impact', r.L(10) + .1, .3, 50]]
+    cues = [['whoosh', .1, .6, .3]] + [['thud', .45 + i * .4, .35] for i in range(4)] + [
+        ['whoosh', r.L(1) - .3, 1.1, .5], ['whoosh', r.L(2), 2.2, .9], ['whoosh', r.L(4) - .3, .9, .4],
+        ['click', r.L(4) + 1.0, .3], ['click', r.W(5, 1), .3], ['click', r.W(5, 3), .3], ['click', r.W(5, 6), .3], ['click', r.W(6, 5), .3], ['pop', r.L(7) + .1, .3, 600],
+        ['whoosh', r.L(8) - .3, .9, .4], ['click', r.W(9, 5), .4], ['whoosh', r.L(10), .7, .4], ['impact', r.L(10) + .8, .4, 60], ['typing', r.L(10) + .9, .1, 10]] + \
+        [['click', r.W(11, k), .3] for k in (0, 1, 2, 3, 5)] + [
+        ['click', r.W(12, 2), .4], ['pop', r.W(12, 2) + .35, .3, 700],
+        ['whoosh', r.L(13) - .3, 1.0, .5], ['thud', r.L(13) + .3, .4], ['whoosh', r.L(14) - .1, .8, .35], ['pop', r.L(14) + .2, .3, 650],
+        ['whoosh', r.L(15) - .1, .8, .35], ['pop', r.L(15) + .2, .3, 800], ['laser', r.L(16) - .3, .5], ['impact', r.L(16) + .1, .3, 50]]
     save('08', page(r, body, js, heads_html, end_html, END), cues)
     return END
-
 
 for n in argv:
     print(n, round({'08b': reel08, '08': reel_guide, '09': reel09, '10': reel10}[n](), 2))

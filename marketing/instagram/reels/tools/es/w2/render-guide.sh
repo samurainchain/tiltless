@@ -9,5 +9,5 @@ ffmpeg -y -v error -i vo-$n.wav -i pad-$n.wav -filter_complex "[0:a]aresample=48
 rm -rf x3d/frames-$n
 for k in 0 1 2 3 4 5; do node x3d/render60.cjs stage-${n}x.html x3d/frames-$n 60 $k 6 & done; wait
 echo "$n frames $(ls x3d/frames-$n | wc -l)"
-x3d/finish.sh 08 1.9
+x3d/finish.sh 08 2.4
 echo done

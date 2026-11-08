@@ -13,7 +13,7 @@ voice from 02–07. Sources: tools/es/w2/ (lines.py voices and times the lines, 
 
 Replaced the screenshot-reader reel on Nov 8 at the owner's request: a fly-over of the landing page,
 the welcome questions at the app's entrance, and a short tour of the site.
-`tiltless-es-08-3d.mp4`, cover `cover-es-08-3d.jpg`, 34 s. Four numbered tiles (Entra, Responde,
+`tiltless-es-08-3d.mp4`, cover `cover-es-08-3d.jpg`, 56 s (stretched from 34 s at the owner's request: too fast to follow; 17 lines with longer pauses, the screenshot step split into button, drop, reading, each field, Save). Four numbered tiles (Entra, Responde,
 Registra, Mira); a fly-over of tiltless.xyz (exchange names on the page blurred: no exchange names in
 ads); the welcome questions answered one by one (goal, markets with the venue chips blurred,
 weaknesses, trades per week, the profile insight); a screenshot drops into the entry form and it

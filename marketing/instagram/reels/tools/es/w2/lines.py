@@ -39,11 +39,17 @@ R = {
  '08g': [
   ('Tu diario de trading en 4 pasos.', 'Tu diario de trading, en cuatro pasos.'),
   ('1. Entra a tiltless.xyz.', 'Uno. Entra a la página de Tíltles.'),
+  ('Ahí ves cómo funciona, qué incluye y cuánto cuesta.', 'Ahí ves cómo funciona, qué incluye, y cuánto cuesta.'),
   ('El diario es gratis y no pide tarjeta.', 'El diario es gratis, y no pide tarjeta.'),
   ('2. Responde 4 preguntas.', 'Dos. Responde cuatro preguntas.'),
   ('Qué buscas, qué operas, dónde pierdes más.', 'Qué buscas. Qué operas. Dónde pierdes más.'),
   ('Y cuántas operaciones haces por semana.', 'Y cuántas operaciones haces por semana.'),
-  ('3. Registra tus operaciones: a mano o con una captura.', 'Tres. Registra tus operaciones: a mano, o con una captura.'),
+  ('Con tus respuestas, Tiltless prepara tu diario.', 'Con tus respuestas, Tíltles prepara tu diario.'),
+  ('3. Registra tus operaciones.', 'Tres. Registra tus operaciones.'),
+  ('A mano, o con una captura de pantalla.', 'A mano, o con una captura de pantalla.'),
+  ('La sueltas en el formulario.', 'La sueltas en el formulario.'),
+  ('Instrumento, dirección, entrada, salida y tamaño se llenan solos.', 'Instrumento, dirección, entrada, salida y tamaño, se llenan solos.'),
+  ('Revisas y guardas.', 'Revisas, y guardas.'),
   ('4. Mira qué te cuesta cada error, en dólares.', 'Cuatro. Mira qué te cuesta cada error, en dólares.'),
   ('Antes de operar, te recuerda tu peor hora.', 'Antes de operar, te recuerda tu peor hora.'),
   ('Y cada semana, un hábito a corregir.', 'Y cada semana, un hábito a corregir.'),
@@ -67,7 +73,7 @@ for n in sys.argv[1:]:
             e = s + d * (len(w) + 2) / total
             ws.append({'w': w, 's': round(s, 3), 'e': round(e, 3)}); s = e
         out.append({'line': sub, 's': round(t, 3), 'e': round(t + d, 3), 'words': ws})
-        parts.append((f'lines/{n}-{i}t.wav', t)); t += d + GAP
+        parts.append((f'lines/{n}-{i}t.wav', t)); t += d + (0.62 if n == '08g' else GAP)
     inputs, filt = [], []
     for k, (f, at) in enumerate(parts):
         inputs += ['-i', f]; filt.append(f'[{k}]adelay={int(at*1000)}|{int(at*1000)}[a{k}]')
