@@ -1,0 +1,25 @@
+const { chromium } = require('playwright');
+const DEMO = __dirname + '/../../checkin-story.json';
+const SHOT = __dirname + '/56-okxAppEs-dark.png';
+(async () => {
+  const b = await chromium.launch();
+  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, locale: 'es-MX', colorScheme: 'dark', timezoneId: 'UTC' });
+  const page = await ctx.newPage();
+  await page.goto('http://localhost:4175/app/'); await page.locator('.onboarding input[type=file]').setInputFiles(DEMO); await page.waitForTimeout(1500);
+  await page.goto('http://localhost:4175/app/#/today'); await page.locator('main h1').waitFor(); await page.waitForTimeout(800);
+  await page.getByRole('button', { name: /nueva operación/i }).first().click(); await page.waitForTimeout(900);
+  await page.screenshot({ path: 'shots/entry-empty.png' });
+  const t0 = Date.now();
+  await page.locator('.screenshot-start input[type=file]').setInputFiles(SHOT);
+  await page.waitForTimeout(400); await page.screenshot({ path: 'shots/entry-running.png' });
+  await page.waitForFunction(() => !/%/.test(document.querySelector('.screenshot-start [role=status]')?.textContent || '%'), null, { timeout: 120000 });
+  console.log('ocr ms', Date.now() - t0, await page.locator('.screenshot-start [role=status]').innerText());
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: 'shots/entry-filled.png' });
+  const vals = await page.evaluate(() => [...document.querySelectorAll('#trade-entry input, #trade-entry select')].filter((e) => e.type !== 'file' && e.type !== 'hidden').map((e) => { const r = e.getBoundingClientRect(); const l = document.querySelector(`label[for="${e.id}"]`); return [(l?.innerText || e.name || e.id).slice(0, 30), e.value, Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)] }));
+  for (const v of vals) console.log(JSON.stringify(v));
+  const sheet = await page.evaluate(() => { const e = document.querySelector('#trade-entry').closest('[role=dialog], .sheet, dialog') || document.querySelector('#trade-entry'); const r = e.getBoundingClientRect(); return [e.className, Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)] });
+  console.log('sheet', JSON.stringify(sheet));
+  const btn = await page.locator('.screenshot-start button').boundingBox(); console.log('btn', JSON.stringify(btn));
+  await b.close();
+})().catch(e => { console.error(e); process.exit(1); });
