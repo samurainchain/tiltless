@@ -27,6 +27,8 @@ export interface Settings {
   tradesView?: 'days' | 'table'
   /** Columns hidden in the trade table; read through normalizeHiddenColumns (core/tradeTable). */
   hiddenTradeColumns?: unknown
+  /** Set once the columns were picked after the Nov 11, 2026 table; older choices start from the new default. */
+  tradeColumnsV2?: true
   /** The position size calculator's last risk, e.g. 1 percent. */
   calculatorRisk?: { mode: 'percent' | 'amount'; value: string }
   /** The trader turned on price charts of crypto trades (candles load from Binance's public data). */

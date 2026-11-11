@@ -64,7 +64,7 @@ export const ru: Messages = {
   'filters.tagsChip': 'Метки: {value}',
   'filters.emotionChip': 'Эмоция: {value}',
   'filters.all': 'все',
-  'sidebar.localJournal': 'Журнал в этом браузере',
+  'sidebar.localJournal': 'Журнал в браузере',
   'sidebar.planPro': 'Pro',
   'sidebar.planTrial': 'Pro · пробный',
   'sidebar.planFree': 'Бесплатный план',

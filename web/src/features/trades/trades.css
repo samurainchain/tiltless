@@ -1027,3 +1027,32 @@ a.button {
   min-width: 4.5rem;
   white-space: nowrap;
 }
+
+/* Tags stay on one line: two, then "+N" with the rest in its title. */
+.trade-table__table .trade-table__flags {
+  flex-wrap: nowrap;
+}
+
+.flag-tag--more {
+  border-style: dashed;
+}
+
+/* The search field sits inside its pill; the pill shows the focus, not the field. */
+:root .filter-search input:is(:focus, :focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+.filter-search input::-webkit-search-cancel-button {
+  filter: grayscale(1);
+}
+
+/* The chips' menus follow the theme (a native list otherwise opens white with light text). */
+.filter-chip select {
+  color-scheme: inherit;
+}
+
+.filter-chip option {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+}

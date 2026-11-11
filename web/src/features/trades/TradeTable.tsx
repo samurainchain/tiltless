@@ -48,10 +48,19 @@ export function TradeSummaryCards({ trades, currency, period }: { trades: readon
   )
 }
 
+/** The hidden columns; choices made before the Nov 11, 2026 table start again from its default. */
+function useHiddenColumns(): TradeColumn[] {
+  const settings = useSettings()
+  return normalizeHiddenColumns(settings.tradeColumnsV2 ? settings.hiddenTradeColumns : undefined)
+}
+
+/** At most this many mistake tags show in a row; the rest go under "+N". */
+const TAGS_SHOWN = 2
+
 /** The column picker: a menu of checkboxes, kept in this browser's settings. */
 export function ColumnsMenu() {
   const { t } = useI18n()
-  const hidden = normalizeHiddenColumns(useSettings().hiddenTradeColumns)
+  const hidden = useHiddenColumns()
   return (
     <details className="columns-menu">
       <summary className="button button--secondary">
@@ -62,7 +71,7 @@ export function ColumnsMenu() {
         <legend className="visually-hidden">{t('trades.columns')}</legend>
         {TRADE_COLUMNS.map((column) => (
           <label key={column} className="columns-menu__item">
-            <input type="checkbox" checked={!hidden.includes(column)} onChange={() => updateSettings({ hiddenTradeColumns: toggleColumn(hidden, column) })} />
+            <input type="checkbox" checked={!hidden.includes(column)} onChange={() => updateSettings({ hiddenTradeColumns: toggleColumn(hidden, column), tradeColumnsV2: true })} />
             {t(`trades.column.${column}`)}
           </label>
         ))}
@@ -96,7 +105,7 @@ export function TradeTable({
   const { t, locale } = useI18n()
   const { accounts, mistakes } = useJournal()
   const mistakeName = useMistakeName()
-  const hidden = normalizeHiddenColumns(useSettings().hiddenTradeColumns)
+  const hidden = useHiddenColumns()
   const columns = TRADE_COLUMNS.filter((column) => !hidden.includes(column))
   const shown = pageOf(trades, page)
   const pages = pageCount(trades.length)
@@ -163,13 +172,21 @@ export function TradeTable({
       }
       case 'tags': {
         const tags = mistakes.filter((tag) => trade.mistakeIds.includes(tag.id))
-        return tags.length === 0 ? null : (
+        if (tags.length === 0) return null
+        const rest = tags.slice(TAGS_SHOWN).map(mistakeName)
+        return (
           <span className="trade-table__flags">
-            {tags.map((tag) => (
+            {tags.slice(0, TAGS_SHOWN).map((tag) => (
               <span key={tag.id} className="flag-tag">
                 {mistakeName(tag)}
               </span>
             ))}
+            {rest.length > 0 && (
+              <span className="flag-tag flag-tag--more" title={rest.join(', ')}>
+                +{rest.length}
+                <span className="visually-hidden">: {rest.join(', ')}</span>
+              </span>
+            )}
           </span>
         )
       }
