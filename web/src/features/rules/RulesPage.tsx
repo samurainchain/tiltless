@@ -7,8 +7,10 @@ import { parsePositive } from '../../core/decimal'
 import { DEFAULT_REVENGE_MINUTES } from '../../core/mistakeDetector'
 import type { Rule } from '../../core/models'
 import { Button, Card, Field, SectionHeader, Segmented } from '../../design/components'
-import { totalDeposit } from '../../core/limits'
-import { formatDecimal, formatMoney, weekdayNames } from '../../i18n/format'
+import { dayLimits, effectiveLimits, totalDeposit } from '../../core/limits'
+import { morningBrief } from '../../core/brief'
+import { realTrades } from '../../core/models'
+import { formatDecimal, formatMoney, intlLocale, weekdayNames } from '../../i18n/format'
 import { totalsCurrency } from '../trades/tradeQueries'
 import { useI18n } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
@@ -102,6 +104,8 @@ export function RulesPage() {
           </a>
         }
       />
+
+      <TodayLimits currency={currency} />
 
       <SectionHeader title={t('limits.dailySection')} />
       <Card className="form-stack">
@@ -244,5 +248,67 @@ function RuleRow({ rule, first, last, onMove }: { rule: Rule; first: boolean; la
         </button>
       </div>
     </li>
+  )
+}
+
+/**
+ * Where today stands against the limits: the loss limit as a meter that turns red at 100% with
+ * the next step (a break, and when the worst hour starts), and the day's trade count.
+ */
+function TodayLimits({ currency }: { currency: Parameters<typeof formatMoney>[1] }) {
+  const { t, locale } = useI18n()
+  const { trades: stored, accounts, profile, mistakes, rules } = useJournal()
+  const now = new Date()
+  const trades = realTrades(stored, accounts)
+  const limits = dayLimits(trades, effectiveLimits(profile, accounts), now)
+  if (!limits.loss && !limits.trades) return null
+  const brief = morningBrief(trades, mistakes, rules, now)
+  const hour = (value: number) => new Intl.DateTimeFormat(intlLocale(locale), { hour: 'numeric', minute: '2-digit' }).format(new Date(2026, 0, 1, value))
+  const lossReached = limits.loss?.level === 'reached'
+
+  return (
+    <section className="limits-today" aria-label={t('limits.today')}>
+      {limits.loss && (
+        <Card className={`limit-meter limit-meter--${limits.loss.level}`}>
+          <div className="limit-meter__head">
+            <p className="label">{t('limits.todayLoss')}</p>
+            {lossReached && <span className="limit-meter__tag">{t('limits.reachedTag')}</span>}
+          </div>
+          <p className="limit-meter__value">
+            <span className="numeric">{formatMoney(limits.loss.used.times(-1), currency, locale)}</span>
+            <span className="numeric secondary-text"> / {formatMoney(limits.loss.limit.times(-1), currency, locale)}</span>
+          </p>
+          <div
+            className="limit-meter__track"
+            role="progressbar"
+            aria-label={t('limits.todayLoss')}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(Math.min(limits.loss.ratio, 1) * 100)}
+          >
+            <span style={{ width: `${Math.min(limits.loss.ratio, 1) * 100}%` }} />
+          </div>
+          {lossReached && (
+            <p className="limit-meter__note" role="status">
+              <strong>{t('limits.reached')}</strong>
+              {brief.hour && ` ${t('limits.worstHourNext', { hour: hour(brief.hour.key) })}`}
+            </p>
+          )}
+        </Card>
+      )}
+      {limits.trades && (
+        <Card className={`limit-count limit-count--${limits.trades.level}`}>
+          <p className="label">{t('limits.todayTrades')}</p>
+          <p className="limit-count__value numeric">
+            {limits.trades.used} <span className="secondary-text">/ {limits.trades.limit}</span>
+          </p>
+          <div className="limit-count__steps" aria-hidden="true">
+            {Array.from({ length: Math.min(limits.trades.limit, 20) }, (_, index) => (
+              <span key={index} className={index < limits.trades!.used ? 'limit-count__step limit-count__step--used' : 'limit-count__step'} />
+            ))}
+          </div>
+        </Card>
+      )}
+    </section>
   )
 }

@@ -683,6 +683,129 @@
   font-weight: 600;
 }
 
+/* Rules: where today stands against the limits */
+
+.limits-today {
+  display: grid;
+  gap: var(--space-m);
+  margin-top: var(--space-m);
+}
+
+.limits-today > .card {
+  margin-top: 0;
+}
+
+.limit-meter,
+.limit-count {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.limit-meter__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.limit-meter__tag {
+  padding: 2px var(--space-s);
+  border: 1px solid var(--color-loss);
+  border-radius: 999px;
+  color: var(--color-loss);
+  font-size: var(--text-label);
+  font-weight: 600;
+}
+
+.limit-meter__value,
+.limit-count__value {
+  font-size: min(var(--text-hero), 12vw);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.limit-meter__value .secondary-text,
+.limit-count__value .secondary-text {
+  font-size: var(--text-title);
+  letter-spacing: 0;
+}
+
+.limit-meter__track {
+  height: 14px;
+  border-radius: 999px;
+  background: var(--color-surface-elevated);
+  overflow: hidden;
+}
+
+.limit-meter__track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-text-secondary);
+}
+
+.limit-meter--warning .limit-meter__track > span,
+.limit-count--warning .limit-count__step--used {
+  background: var(--color-warning);
+}
+
+.limit-meter--reached {
+  border-color: color-mix(in srgb, var(--color-loss) 45%, var(--color-border));
+}
+
+.limit-meter--reached .limit-meter__value > .numeric:first-child {
+  color: var(--color-loss);
+}
+
+.limit-meter--reached .limit-meter__track > span {
+  background: var(--color-loss);
+}
+
+.limit-meter__note {
+  padding: var(--space-s) var(--space-m);
+  border: 1px solid color-mix(in srgb, var(--color-loss) 45%, transparent);
+  border-radius: var(--radius-field);
+  background: color-mix(in srgb, var(--color-loss) 8%, var(--color-surface));
+}
+
+.limit-meter__note strong {
+  color: var(--color-loss);
+}
+
+.limit-count__steps {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-xxs);
+}
+
+.limit-count__step {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-surface-elevated);
+}
+
+.limit-count__step--used {
+  background: var(--color-text-secondary);
+}
+
+.limit-count--reached .limit-count__step--used {
+  background: var(--color-warning);
+}
+
+@media (min-width: 900px) {
+  .limits-today {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .limits-today > :only-child {
+    grid-column: 1 / -1;
+  }
+}
+
 /* Rules */
 
 .toggle-row {

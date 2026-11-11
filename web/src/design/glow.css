@@ -121,6 +121,19 @@
   text-shadow: 0 0 28px color-mix(in srgb, var(--color-loss) 40%, transparent);
 }
 
+:root[data-style='glow'] .limit-meter--reached {
+  border-top-color: var(--color-loss);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-loss) 20%, transparent), 0 -10px 30px -18px color-mix(in srgb, var(--color-loss) 70%, transparent);
+}
+
+:root[data-style='glow'] .limit-meter--reached .limit-meter__value > .numeric:first-child {
+  text-shadow: 0 0 24px color-mix(in srgb, var(--color-loss) 45%, transparent);
+}
+
+:root[data-style='glow'] .limit-meter--reached .limit-meter__track > span {
+  box-shadow: 0 0 16px var(--color-loss);
+}
+
 :root[data-style='glow'] .partners-facts__value {
   text-shadow: 0 0 20px var(--glow-soft);
 }
