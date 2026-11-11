@@ -16,14 +16,6 @@ import './landing.css'
 
 const LANGUAGE_NAMES: Record<Locale, string> = { es: 'ES', en: 'EN', ru: 'RU' }
 
-/** The demo month's costliest mistakes (the same numbers as the app's demo journal). */
-const DEMO_COSTS: { key: MessageKey; cost: string }[] = [
-  { key: 'mistake.badHour', cost: '332.50' },
-  { key: 'mistake.heldPastStop', cost: '280.00' },
-  { key: 'mistake.fomo', cost: '260.00' },
-  { key: 'mistake.revengeTrading', cost: '182.50' },
-]
-
 const DEMO_EMOTIONS: { key: MessageKey; pnl: string }[] = [
   { key: 'emotion.anger', pnl: '-680' },
   { key: 'emotion.fomo', pnl: '-390' },
@@ -64,7 +56,6 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
       {t('landing.cta')}
     </Button>
   )
-  const largest = Number(DEMO_COSTS[0]!.cost)
 
   return (
     <div className="landing">
@@ -112,21 +103,15 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
           </div>
 
           <div className="landing__hero-visual" aria-hidden="true">
-            <div className="landing__mock card">
-              <p className="landing__mock-label">
-                {t('landing.mock.costTitle')} <span>· {t('landing.demo')}</span>
-              </p>
-              {DEMO_COSTS.map((row, index) => (
-                <div key={row.key} className={`landing__cost${index === 0 ? ' landing__cost--top' : ''}`}>
-                  <div className="landing__cost-head">
-                    <span>{t(row.key)}</span>
-                    <span className="numeric loss">{money(`-${row.cost}`)}</span>
-                  </div>
-                  <span className="landing__bar-track">
-                    <span style={{ width: `${(Number(row.cost) / largest) * 100}%` }} />
-                  </span>
-                </div>
-              ))}
+            {/* The real app with the demo month (scripts/landing-shots), not a drawing of it. */}
+            <div className="landing__window">
+              <div className="landing__window-bar">
+                <i />
+                <i />
+                <i />
+                <span>tiltless.xyz/app</span>
+              </div>
+              <img src={`/landing/${locale}-analytics.webp`} alt="" width={1440} height={900} />
             </div>
             <div className="landing__float landing__float--flag card">
               <span className="landing__flag">{t('mistake.revengeTrading')}</span>
@@ -149,6 +134,25 @@ export function LandingPage({ onStart }: { onStart: () => void }) {
             <Fact value={t('landing.problem.revenge.value')} text={t('landing.problem.revenge.text')} />
             <Fact value={money('-280')} text={t('landing.problem.stop.text')} />
             <Fact value={`${money('-680')} / ${money('885')}`} text={t('landing.problem.anger.text')} />
+          </div>
+          <p className="caption landing__note">{t('landing.demoNote')}</p>
+        </section>
+
+        <section className="landing__section">
+          <p className="landing__eyebrow">{t('landing.app.eyebrow')}</p>
+          <h2>{t('landing.app.title')}</h2>
+          <div className="landing__shots">
+            {(['today', 'trades', 'rules'] as const).map((screen) => (
+              <figure key={screen} className="landing__shot">
+                <div className="landing__window">
+                  <img src={`/landing/${locale}-${screen}.webp`} alt={t(`landing.app.${screen}.alt`)} width={1440} height={900} loading="lazy" />
+                </div>
+                <figcaption>
+                  <strong>{t(`landing.app.${screen}.title`)}</strong>
+                  <span className="caption">{t(`landing.app.${screen}.text`)}</span>
+                </figcaption>
+              </figure>
+            ))}
           </div>
           <p className="caption landing__note">{t('landing.demoNote')}</p>
         </section>

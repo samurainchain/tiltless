@@ -146,8 +146,68 @@
   position: relative;
 }
 
-.landing__mock {
-  padding: var(--space-l);
+/* The app in a window: a slim bar with three dots over a screenshot of the real app. */
+.landing__window {
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 14px;
+  background: var(--color-background);
+  box-shadow: 0 40px 100px -30px var(--color-scrim), 0 0 70px -30px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+.landing__window img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.landing__window-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.landing__window-bar i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+}
+
+.landing__window-bar span {
+  margin-left: var(--space-s);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+}
+
+.landing__shots {
+  display: grid;
+  gap: var(--space-l);
+  margin-top: var(--space-l);
+}
+
+.landing__shot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: 0;
+}
+
+.landing__shot figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+@media (min-width: 900px) {
+  .landing__shots {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .landing__mock-label,
@@ -226,9 +286,9 @@
 .landing__flag {
   align-self: flex-start;
   padding: var(--space-xxs) var(--space-xs);
-  border: 1px solid var(--color-loss);
+  border: 1px solid var(--color-warning);
   border-radius: var(--radius-small);
-  color: var(--color-loss);
+  color: var(--color-warning);
   font-size: var(--text-caption);
 }
 
@@ -290,9 +350,9 @@
 
 .landing__chip {
   padding: var(--space-xxs) var(--space-xs);
-  border: 1px solid var(--color-loss);
+  border: 1px solid var(--color-warning);
   border-radius: var(--radius-small);
-  color: var(--color-loss);
+  color: var(--color-warning);
   font-size: var(--text-caption);
 }
 
