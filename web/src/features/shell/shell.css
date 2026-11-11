@@ -1754,3 +1754,219 @@
   flex-wrap: wrap;
   gap: var(--space-s);
 }
+
+/* Profile: style and accent picked from previews (AppearanceGrid). Each preview draws with its
+   own copy of the palette (--ap-*), so all combinations show at once. */
+
+.appearance-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+
+.appearance-grid__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.appearance-grid__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+  gap: var(--space-s);
+}
+
+.appearance-grid__note {
+  margin: 0;
+}
+
+.ap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ap__screen {
+  position: relative;
+  display: flex;
+  height: 92px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--ap-bg);
+}
+
+.ap[aria-checked='true'] .ap__screen {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.ap:hover .ap__screen {
+  border-color: var(--color-border-strong);
+}
+
+.ap__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 24px;
+  padding-top: 9px;
+  border-right: 1px solid var(--ap-border);
+}
+
+.ap__mark {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: var(--ap-fill);
+}
+
+.ap__line {
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ap-secondary);
+  opacity: 0.6;
+}
+
+.ap__line--on {
+  background: var(--ap-accent);
+  opacity: 1;
+}
+
+.ap__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+}
+
+.ap__card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 7px;
+  border: 1px solid var(--ap-border);
+  border-radius: 6px;
+  background: var(--ap-surface);
+}
+
+.ap__label {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ap-secondary);
+}
+
+.ap__num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ap-profit);
+}
+
+.ap__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ap__btn {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--ap-fill);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ap__loss {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--ap-loss);
+}
+
+.ap__aa {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 15px;
+  padding: 0 4px;
+  border: 1px solid color-mix(in srgb, var(--ap-profit) 60%, transparent);
+  border-radius: 4px;
+  background: var(--ap-surface);
+  color: var(--ap-text);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.ap__name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  font-size: var(--text-caption);
+}
+
+.ap[aria-checked='true'] .ap__name {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+/* Each style's character in miniature. */
+.ap--glow .ap__screen {
+  background: radial-gradient(90px 60px at 100% 0%, color-mix(in srgb, var(--ap-accent) 30%, transparent), transparent 70%), var(--ap-bg);
+}
+
+.ap--glow .ap__card {
+  border-top-color: color-mix(in srgb, var(--ap-accent) 70%, var(--ap-border));
+  box-shadow: 0 -6px 14px -10px var(--ap-accent);
+}
+
+.ap--glow .ap__btn {
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ap-accent) 70%, transparent);
+}
+
+.ap--soft .ap__card {
+  border-color: transparent;
+  border-radius: 9px;
+}
+
+.ap--soft .ap__side {
+  border-right-color: transparent;
+  background: var(--ap-surface);
+}
+
+.ap--graphite .ap__card {
+  border-radius: 9px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ap-text) 6%, var(--ap-surface)), var(--ap-surface));
+}
+
+.ap--flat .ap__card {
+  border-radius: 4px;
+}
+
+@media (min-width: 720px) {
+  .appearance-grid__row {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
