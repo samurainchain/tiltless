@@ -1,7 +1,7 @@
 import { Bell, CalendarCheck, Check, Flame, MessageSquare, Monitor, Moon, Sun, TriangleAlert, type LucideIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { useAutoFlags, useJournal } from '../../app/journal'
-import { routeHref, type Route } from '../../app/router'
+import { routeHref, useRoute, type Route } from '../../app/router'
 import { ACCENTS, updateSettings, useSettings, useWeekStart, type LanguageSetting, type ThemeSetting } from '../../app/settings'
 import { useCloud } from '../../app/cloud'
 import { effectiveLimits } from '../../core/limits'
@@ -12,6 +12,10 @@ import { FeedbackForm } from '../feedback/FeedbackForm'
 import { useAccess } from '../../app/entitlement'
 import { canUse } from '../../core/entitlements'
 import { Popover } from './Popover'
+import { AccountSwitcher } from '../accounts/AccountSwitcher'
+
+/** Screens whose numbers follow the picked account: the top bar shows the switcher on them. */
+const ACCOUNT_ROUTES: Route['name'][] = ['today', 'trades', 'analytics', 'review']
 
 const LANGUAGES: { value: LanguageSetting; label: string }[] = [
   { value: 'en', label: 'English' },
@@ -37,7 +41,9 @@ export function AppBar() {
   const { t, locale } = useI18n()
   const settings = useSettings()
   const { state } = useCloud()
+  const route = useRoute()
   const ThemeIcon = THEME_ICONS[settings.theme]
+  const today = new Intl.DateTimeFormat(locale, { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date())
 
   const option = (selected: boolean, label: string, onSelect: () => void, close: () => void) => (
     <button
@@ -58,6 +64,12 @@ export function AppBar() {
 
   return (
     <div className="app-bar">
+      <p className="app-bar__date">{today}</p>
+      {ACCOUNT_ROUTES.includes(route.name) && (
+        <div className="app-bar__account">
+          <AccountSwitcher />
+        </div>
+      )}
       <Popover label={t('profile.language')} trigger={<span className="app-bar__code">{locale.toUpperCase()}</span>}>
         {(close) => (
           <div role="radiogroup" aria-label={t('profile.language')} className="popover__options">

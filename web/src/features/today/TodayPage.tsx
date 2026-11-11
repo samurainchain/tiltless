@@ -90,96 +90,99 @@ export function TodayPage() {
     <>
       {header}
       <RecapShareSheet open={sharing} onClose={() => setSharing(false)} initialSpan="day" />
-      <Card className="today-summary">
-        <p className="caption">{t('today.pnlLabel')}</p>
-        <PnLText amount={totalPnl(todayTrades)} currency={currency} size="hero" />
-        <p className="secondary-text">{tp('today.tradeCount', closedCount)}</p>
-        {streak > 0 && (
-          <p className="streak">
-            <Flame size={16} aria-hidden="true" />
-            {tp('today.streak', streak)}
-          </p>
-        )}
-      </Card>
-
-      {closedCount === 0 && <BriefCard currency={currency} />}
-
-      <SessionClock />
-
-      <DayCheckInCard />
-
-      {reviewDue && canUse('weeklyReview', access) && (
-        <a className="card review-reminder" href={routeHref({ name: 'review' })}>
-          <CalendarCheck size={20} aria-hidden="true" />
-          <span>
-            <strong>{t('today.reviewDue')}</strong>
-            <span className="caption">{t('today.reviewDueHint')}</span>
-          </span>
-        </a>
-      )}
-
-      {(limits.loss || limits.trades) && (
-        <Card className="limits-card">
-          {limits.reached && (
-            <p className="limit-reached" role="alert">
-              {t('limits.reached')}
+      {/* On wide screens a dashboard grid (shell.css): the day, the brief and the habit in one row. */}
+      <div className="today-grid">
+        <Card className="today-summary">
+          <p className="caption">{t('today.pnlLabel')}</p>
+          <PnLText amount={totalPnl(todayTrades)} currency={currency} size="hero" />
+          <p className="secondary-text">{tp('today.tradeCount', closedCount)}</p>
+          {(limits.loss || limits.trades) && (
+            <div className="today-summary__limits">
+              {limits.reached && (
+                <p className="limit-reached" role="alert">
+                  {t('limits.reached')}
+                </p>
+              )}
+              {limits.loss && (
+                <LimitBar
+                  label={t('limits.dayLoss')}
+                  level={limits.loss.level}
+                  ratio={limits.loss.ratio}
+                  value={t('limits.of', { used: formatMoney(limits.loss.used.times(-1), currency, locale), limit: formatMoney(limits.loss.limit, currency, locale, false) })}
+                />
+              )}
+              {limits.trades && (
+                <LimitBar
+                  label={t('limits.dayTrades')}
+                  level={limits.trades.level}
+                  ratio={limits.trades.ratio}
+                  value={t('limits.of', { used: String(limits.trades.used), limit: String(limits.trades.limit) })}
+                />
+              )}
+            </div>
+          )}
+          {streak > 0 && (
+            <p className="streak">
+              <Flame size={16} aria-hidden="true" />
+              {tp('today.streak', streak)}
             </p>
           )}
-          {limits.loss && (
-            <LimitBar
-              label={t('limits.dayLoss')}
-              level={limits.loss.level}
-              ratio={limits.loss.ratio}
-              value={t('limits.of', { used: formatMoney(limits.loss.used.times(-1), currency, locale), limit: formatMoney(limits.loss.limit, currency, locale, false) })}
-            />
-          )}
-          {limits.trades && (
-            <LimitBar
-              label={t('limits.dayTrades')}
-              level={limits.trades.level}
-              ratio={limits.trades.ratio}
-              value={t('limits.of', { used: String(limits.trades.used), limit: String(limits.trades.limit) })}
-            />
-          )}
         </Card>
-      )}
 
-      <ChallengeCards selected={selected} />
+        {closedCount === 0 && <BriefCard currency={currency} />}
 
-      {canUse('weeklyReview', access) && <FocusCard currency={currency} />}
+        <SessionClock />
 
-      {weekMistake && (
-        <Card className="week-mistake">
-          <p className="caption">{t('today.weekMistake')}</p>
-          <p className="week-mistake__row">
-            <span className="week-mistake__name">{mistakeName(weekMistake.tag)}</span>
-            <span className="loss numeric">{formatMoney(weekMistake.cost.times(-1), currency, locale)}</span>
-          </p>
-          <p className="caption">{tp('today.weekMistakeTrades', weekMistake.tradeCount)}</p>
-        </Card>
-      )}
+        <DayCheckInCard />
 
-      {todayTrades.length === 0 ? (
-        <EmptyState
-          icon={<Sun size={28} />}
-          title={t(trades.length > 0 ? 'today.noTradesTitle' : 'today.emptyTitle')}
-          message={t(trades.length > 0 ? 'today.noTradesMessage' : 'today.emptyMessage')}
-          action={
-            <Button variant="primary" block icon={<Plus size={20} aria-hidden="true" />} onClick={newTrade}>
-              {t('action.newTrade')}
-            </Button>
-          }
-        />
-      ) : (
-        <>
-          <SectionHeader title={t('today.tradesSection')} />
-          <div className="list-card">
-            {todayTrades.map((trade) => (
-              <TradeRow key={trade.id} trade={trade} />
-            ))}
-          </div>
-        </>
-      )}
+        {reviewDue && canUse('weeklyReview', access) && (
+          <a className="card review-reminder" href={routeHref({ name: 'review' })}>
+            <CalendarCheck size={20} aria-hidden="true" />
+            <span>
+              <strong>{t('today.reviewDue')}</strong>
+              <span className="caption">{t('today.reviewDueHint')}</span>
+            </span>
+          </a>
+        )}
+
+
+        <ChallengeCards selected={selected} />
+
+        {canUse('weeklyReview', access) && <FocusCard currency={currency} />}
+
+        {weekMistake && (
+          <Card className="week-mistake">
+            <p className="caption">{t('today.weekMistake')}</p>
+            <p className="week-mistake__row">
+              <span className="week-mistake__name">{mistakeName(weekMistake.tag)}</span>
+              <span className="loss numeric">{formatMoney(weekMistake.cost.times(-1), currency, locale)}</span>
+            </p>
+            <p className="caption">{tp('today.weekMistakeTrades', weekMistake.tradeCount)}</p>
+          </Card>
+        )}
+
+        {todayTrades.length === 0 ? (
+          <EmptyState
+            icon={<Sun size={28} />}
+            title={t(trades.length > 0 ? 'today.noTradesTitle' : 'today.emptyTitle')}
+            message={t(trades.length > 0 ? 'today.noTradesMessage' : 'today.emptyMessage')}
+            action={
+              <Button variant="primary" block icon={<Plus size={20} aria-hidden="true" />} onClick={newTrade}>
+                {t('action.newTrade')}
+              </Button>
+            }
+          />
+        ) : (
+          <>
+            <SectionHeader title={t('today.tradesSection')} />
+            <div className="list-card">
+              {todayTrades.map((trade) => (
+                <TradeRow key={trade.id} trade={trade} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </>
   )
 }

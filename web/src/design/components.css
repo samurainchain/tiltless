@@ -217,6 +217,35 @@
   }
 }
 
+/* Wide screens: trade entry slides in along the right edge, the page still visible beside it. */
+@media (min-width: 900px) {
+  .sheet--side {
+    width: min(600px, 100vw);
+    max-width: 600px;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0 0 0 auto;
+    border-width: 0 0 0 1px;
+    border-radius: 0;
+  }
+
+  .sheet--side .sheet__panel {
+    height: 100%;
+    max-height: 100dvh;
+  }
+
+  .sheet--side[open] {
+    animation: sheet-side-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.05);
+  }
+}
+
+@keyframes sheet-side-in {
+  from {
+    transform: translateX(48px);
+    opacity: 0;
+  }
+}
+
 /* Segmented control */
 
 .segmented {

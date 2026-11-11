@@ -185,7 +185,7 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
 
   if (!account) {
     return (
-      <Sheet open title={title} onClose={onClose}>
+      <Sheet open side title={title} onClose={onClose}>
         <EmptyState
           icon={<Wallet size={28} />}
           title={t('today.noAccountTitle')}
@@ -203,6 +203,7 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
   return (
     <Sheet
       open
+      side
       title={title}
       onClose={onClose}
       header={

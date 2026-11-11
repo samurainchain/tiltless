@@ -13,11 +13,11 @@ export type AccountSelection = string
 export interface Settings {
   language: LanguageSetting
   theme: ThemeSetting
-  /** Soft (calm greys and rounded panels, the default), glow (the accent's light behind the page
-   *  and on what's active), flat, or graphite (flat's colors with big rounded cards). */
+  /** Glow (the accent's light behind the page and on what's active, the default), soft (calm
+   *  greys and rounded panels), flat, or graphite (flat's colors with big rounded cards). */
   style: StyleSetting
-  /** Set once the soft style became the default for this browser (see read). */
-  softStyle?: true
+  /** Set once glow became the default again for this browser (see read). */
+  glowStyle?: true
   accent: AccentSetting
   selectedAccount: AccountSelection
   weekStart: WeekStartSetting
@@ -41,7 +41,7 @@ export interface Settings {
 
 // Storage keys keep the app's first name, so saved settings survive the rename.
 const STORAGE_KEY = 'mirror.settings'
-const DEFAULTS: Settings = { language: 'system', theme: 'system', style: 'soft', softStyle: true, accent: 'green', selectedAccount: 'all', weekStart: 'auto' }
+const DEFAULTS: Settings = { language: 'system', theme: 'system', style: 'glow', glowStyle: true, accent: 'green', selectedAccount: 'all', weekStart: 'auto' }
 
 // Per-browser preferences. They live in localStorage, apart from the journal data, and are
 // read defensively: storage can be unavailable (private mode) or hold stale shapes.
@@ -55,9 +55,9 @@ function read(): Settings {
     if (!raw) return DEFAULTS
     const stored = JSON.parse(raw) as Partial<Settings>
     const saved: Settings = { ...DEFAULTS, ...stored }
-    // Glow was the default until November 2026 and saved settings can't tell a choice from the
-    // default, so it moves to the new default once; whoever wants glow back picks it again.
-    if (!stored.softStyle && saved.style === 'glow') saved.style = 'soft'
+    // Soft was the default from Nov 6 to Nov 11, 2026, and saved settings can't tell a choice from
+    // the default, so it moves to glow, the default again, once; whoever wants soft picks it again.
+    if (!stored.glowStyle && saved.style === 'soft') saved.style = 'glow'
     return saved
   } catch {
     return DEFAULTS

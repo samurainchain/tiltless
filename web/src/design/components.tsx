@@ -85,6 +85,7 @@ export function Sheet({
   onClose,
   header,
   footer,
+  side = false,
   children,
 }: {
   open: boolean
@@ -92,6 +93,8 @@ export function Sheet({
   onClose: () => void
   header?: ReactNode
   footer?: ReactNode
+  /** On wide screens, a panel along the right edge instead of a centred dialog. */
+  side?: boolean
   children: ReactNode
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -108,7 +111,7 @@ export function Sheet({
   return (
     <dialog
       ref={dialog}
-      className="sheet"
+      className={side ? 'sheet sheet--side' : 'sheet'}
       aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault()

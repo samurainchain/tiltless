@@ -623,11 +623,56 @@
   flex-direction: column;
 }
 
-.limits-card {
+.today-summary__limits {
   display: flex;
   flex-direction: column;
-  gap: var(--space-m);
+  gap: var(--space-s);
   margin-top: var(--space-s);
+}
+
+/* Today on wide screens: a dashboard grid. The day, the brief and the habit share the first row;
+   whatever is missing hands its room to the rest. Everything else takes the full width. */
+@media (min-width: 1200px) {
+  .today-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+    gap: var(--space-m);
+    margin-top: var(--space-m);
+  }
+
+  .today-grid.today-grid > * {
+    grid-column: span 12;
+    margin-top: 0;
+  }
+
+  .today-grid > .today-summary {
+    grid-column: span 5;
+  }
+
+  .today-grid > .brief-card {
+    grid-column: span 4;
+  }
+
+  .today-grid > :is(.focus-card, .week-mistake) {
+    grid-column: span 3;
+  }
+
+  .today-grid:not(:has(.brief-card)) > .today-summary {
+    grid-column: span 9;
+  }
+
+  .today-grid:not(:has(.focus-card, .week-mistake)) > .brief-card {
+    grid-column: span 7;
+  }
+
+  .today-grid:not(:has(.brief-card, .focus-card, .week-mistake)) > .today-summary {
+    grid-column: span 12;
+  }
+
+  .content:has(.today-grid) .page-header__subtitle {
+    display: none;
+  }
 }
 
 .limit-reached {
@@ -1285,6 +1330,45 @@
   justify-content: flex-end;
   gap: var(--space-xs);
   margin-bottom: var(--space-s);
+}
+
+.app-bar__date {
+  display: none;
+  margin: 0 auto 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.app-bar__account {
+  display: none;
+}
+
+/* Wide screens: a full-width top bar with the date and the account, like a desktop app; the
+   account moves here from the page headers. */
+@media (min-width: 900px) {
+  .app-bar {
+    align-items: center;
+    max-width: none;
+    min-height: 64px;
+    margin: calc(-1 * var(--space-xl)) calc(-1 * var(--space-xl)) var(--space-l);
+    padding: var(--space-xs) var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .app-bar__date {
+    display: block;
+  }
+
+  .app-bar__account {
+    display: flex;
+  }
+
+  .page-header__trailing > .account-pill {
+    display: none;
+  }
 }
 
 .app-bar__button {
