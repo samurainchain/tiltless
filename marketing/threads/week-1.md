@@ -1,85 +1,87 @@
 # Threads, week 1 (Thu Nov 12 – Wed Nov 18, 2026)
 
-Account: @tiltless.xyz on Threads (same login as Instagram). Spanish (Mexico, "tú"), same voice as
-marketing/instagram/voice.md: calm, dry, a little blunt, no promises of profit. Faceless brand.
-Demo numbers are the demo journal's month (October 2026) and always say "mes de demostración".
-Nothing is posted without the owner's yes.
+Account: @tiltless.xyz on Threads (same login as Instagram). **Russian** (the owner's decision on
+Nov 11: Threads is for the Russian-speaking audience, Instagram and TikTok stay Spanish for Mexico).
+"Ты", the same calm, dry, a little blunt voice as marketing/instagram/voice.md, no promises of
+profit. Words as the app says them in Russian: «Отыгрыш», «Пересидел стоп», «Плохой час», «Цена
+ошибок», «PnL по часу входа», «Из скриншота». Demo numbers are the demo journal's month (October
+2026) and always say «демо-месяц». Nothing is posted without the owner's yes.
 
-Why Threads: organic reach is still generous there, and text posts that ask something get replies,
-which is what the feed rewards. So most posts here end in a question, and the owner answers every
-reply in the first hour.
+Why Threads: organic reach is still generous there, and posts that ask something get replies, which
+is what the feed rewards. So most posts end in a question, and replies get an answer in the first
+hour.
 
 Threads rules worth keeping in mind:
 - up to 500 characters a post; a longer idea becomes a thread (reply to your own post);
-- one link a post is fine here (unlike Instagram captions), but posts without a link travel further:
-  keep the link for the offer and the feature posts;
-- one topic tag a post (the "#" picker): use "Trading" or "Day trading";
-- polls and images work; the Instagram reels can be shared to Threads too (Share → Threads).
+- one link a post is fine, but posts without a link travel further: the link only in the offer and
+  the feature post;
+- one topic tag a post (the "#" picker): «Трейдинг»;
+- polls work; the reels are in Spanish, so don't share them to this account.
 
-Times are Mexico City (UTC−6); Cancún is one hour later. Mornings at 8:00 a.m. catch traders before
-the New York open; evenings at 7:30 p.m. match the reels.
+Times are Moscow (UTC+3), where most of the audience is: 10:00 and 20:00. In Cancún that is 2:00
+and 12:00, so schedule the posts in Threads itself (the "…" menu on a draft → Schedule) instead of
+posting by hand at night.
 
-Checked with /ig-human (humanize.py, detect.py): no em dashes, stock phrases or invisible
-characters; specificity 100. Its "voice" check only counts English contractions, so it reads low on
-Spanish.
+Checked with /ig-human: no em dashes, curly quotes or invisible characters. Its word lists are
+English, so the rest of its score doesn't apply to Russian.
 
-| # | when (CDMX) | type | image |
-| --- | --- | --- | --- |
-| 1 | Thu Nov 12, 8:00 a.m. | question | none |
-| 2 | Fri Nov 13, 8:00 a.m. | poll | none |
-| 3 | Fri Nov 13, 7:30 p.m. | proof, same day as reel 10 | cover-es-10-3d.jpg |
-| 4 | Sat Nov 14, 10:00 a.m. | question | none |
-| 5 | Sun Nov 15, 7:30 p.m. | offer, same day as reel 11 | cover-es-08-3d.jpg (the guide) |
-| 6 | Mon Nov 16, 8:00 a.m. | teach | none |
-| 7 | Tue Nov 17, 8:00 a.m. | opinion | none |
-| 8 | Tue Nov 17, 7:30 p.m. | feature | cover-es-08b-3d.jpg (screenshot reader) |
-| 9 | Wed Nov 18, 8:00 a.m. | proof | cover-es-09-3d.jpg |
-| 10 | Wed Nov 18, 7:30 p.m. | builder note | none |
+| # | when (Moscow) | type |
+| --- | --- | --- |
+| 1 | Thu Nov 12, 10:00 | question |
+| 2 | Fri Nov 13, 10:00 | poll |
+| 3 | Fri Nov 13, 20:00 | proof |
+| 4 | Sat Nov 14, 12:00 | question |
+| 5 | Sun Nov 15, 20:00 | offer (link) |
+| 6 | Mon Nov 16, 10:00 | teach |
+| 7 | Tue Nov 17, 10:00 | opinion |
+| 8 | Tue Nov 17, 20:00 | feature (link) |
+| 9 | Wed Nov 18, 10:00 | proof |
+| 10 | Wed Nov 18, 20:00 | builder note |
 
-Images are in the session's scratchpad (`scratchpad/es/`); ask Claude to send them again if the
-container was replaced.
+Text posts, no images: the existing covers are in Spanish. Russian cards from the app's Russian
+screens can be made when a post needs one.
 
 ## 1 · question
 
 ```
-No tienes un problema de estrategia. Tienes un problema de tilt.
+У тебя не проблема со стратегией. У тебя тильт.
 
-Una pérdida, tres operaciones para recuperarla y el día se fue.
+Один убыток, три сделки, чтобы отыграться, и день прошёл.
 
-¿Cuántas veces te pasó esta semana?
+Сколько раз так было на этой неделе?
 ```
 
 ## 2 · poll
 
 ```
-¿Qué te cuesta más dinero?
+Что стоит тебе больше всего денег?
 ```
-Poll options: `Operar por revancha` · `FOMO` · `Mover el stop` · `Operar de noche`
+Poll options: `Отыгрыш после убытка` · `FOMO-входы` · `Двигаю стоп` · `Торговля вечером`
 
-## 3 · proof (with the reel 10 cover)
+## 3 · proof
 
 ```
-¿A qué hora operas peor?
+В какой час ты торгуешь хуже всего?
 
-Mes de demostración: a las 8 de la noche, −$800. A las 9 de la mañana, +$710. Mismo trader, mismo mercado.
+Демо-месяц: сделки, открытые в 8 вечера, дали −$800. Открытые в 9 утра: +$710. Тот же трейдер, тот же рынок.
 
-Tiltless te enseña tu PnL por hora de entrada. Así encuentras la tuya antes de abrir la próxima.
+Tiltless показывает PnL по часу входа. Найди свой плохой час до того, как откроешь следующую сделку.
 ```
 
 ## 4 · question
 
 ```
-Pregunta honesta: ¿llevas diario de trading?
+Честный вопрос: ты ведёшь дневник сделок?
 
-Si no, ¿qué te frena? Si sí, ¿en qué lo llevas?
+Если нет, что мешает? Если да, где ведёшь?
 ```
 
 ## 5 · offer (link)
 
 ```
-Si te registras antes del 30 de noviembre, Pro es gratis 30 días. Sin pagar nada.
+Если зарегистрируешься до 30 ноября, Pro бесплатно 30 дней. Без оплаты.
 
-El diario es gratis siempre. Pro suma lo que te cuesta cada error, en dólares, y lee capturas sin límite.
+Дневник бесплатный всегда. Pro считает цену каждой ошибки в долларах и читает скриншоты без лимита.
 
 tiltless.xyz
 ```
@@ -87,53 +89,53 @@ tiltless.xyz
 ## 6 · teach
 
 ```
-Regla que cuesta cero: 15 minutos sin operar después de cada pérdida.
+Правило, которое ничего не стоит: 15 минут без сделок после каждого убытка.
 
-En el mes de demostración, las 3 operaciones abiertas a menos de 15 minutos de una pérdida: cero ganadoras, −$182.50.
+В демо-месяце 3 сделки, открытые меньше чем через 15 минут после убытка: ни одной в плюс, −$182,50.
 ```
 
 ## 7 · opinion
 
 ```
-"Solo esta vez" es la frase más cara del trading.
+«Только в этот раз» самая дорогая фраза в трейдинге.
 
-Mover el stop una vez parece una excepción. Cuatro veces en un mes ya es un patrón: cero ganadoras, −$280 en el mes de demostración.
+Сдвинуть стоп один раз кажется исключением. Четыре раза за месяц уже привычка: ни одной сделки в плюс, −$280 в демо-месяце.
 ```
 
 ## 8 · feature (link)
 
 ```
-Llenar el diario a mano es la razón por la que nadie lo llena.
+Дневник сделок бросают, потому что заполнять его руками долго.
 
-En Tiltless subes una captura de tu operación cerrada y se llenan solos el instrumento, la dirección, la entrada, la salida y el tamaño. Gratis: 5 lecturas al mes.
+В Tiltless загружаешь скриншот закрытой сделки, и сами заполняются инструмент, направление, вход, выход и объём. Бесплатно 5 скриншотов в месяц.
 
 tiltless.xyz
 ```
 
-## 9 · proof (with the reel 09 cover)
+## 9 · proof
 
 ```
-Mes de demostración: 52% de acierto, +$255. Parece un buen mes.
+Демо-месяц: 52% сделок в плюс, итог +$255. Вроде неплохо.
 
-Los errores de ese mismo mes: −$1,340.
-Mala hora −$332.50
-Pasar el stop −$280
+Ошибки за тот же месяц: −$1 340.
+Плохой час −$332,50
+Пересидел стоп −$280
 FOMO −$260
-Revancha −$182.50
+Отыгрыш −$182,50
 
-La tasa de acierto no te enseña eso.
+Винрейт этого не покажет.
 ```
 
 ## 10 · builder note
 
 ```
-Tiltless lo hace una sola persona.
+Tiltless делает один человек.
 
-Si algo no funciona o te falta algo en el diario, respóndeme aquí. Leo todo y lo arreglo.
+Если что-то не работает или чего-то не хватает в дневнике, напиши здесь в ответах. Читаю всё и чиню.
 ```
 
 ## Replies
 
 Answer every reply in the first hour, in one or two lines, no link unless asked. /ig-reply drafts
-them (it works for Threads replies too). Note in marketing/threads/log.md what got replies, so the
-next week leans on it.
+them (ask for Russian). Note in marketing/threads/log.md what got replies, so the next week leans on
+it.
