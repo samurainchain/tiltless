@@ -7,6 +7,11 @@ from common3d import build, page, win, crop, ext, bar_html, h1s, save, CURSOR  #
 SH = 'w2/shots/'
 
 
+def nosubs(html):
+    """The scene headings already carry each line, so the word-by-word subtitles stay off."""
+    return html.replace('</head>', '<style>#sub{display:none!important}</style></head>', 1)
+
+
 class R(build.Reel):
     """A reel whose words come from lines-NN.json; amounts with − are red in the subtitles."""
     def __init__(self, n):
@@ -243,7 +248,7 @@ if (show('end', t, L[10] - .05, 999)) {{ const l = prog(t, L[10], L[10] + .6); $
             ['whoosh', r.L(1) - .3, 1.0, .5], ['pop', r.L(2) + .1, .3, 600], ['pop', r.W(2, 3) + .1, .3, 700], ['whoosh', r.L(3) + .1, .8, .3]] + \
            [['deal', a + .15, .5] for a in [r.L(4), r.L(5), r.L(6), r.L(7), r.L(8), r.L(8) + .25, r.L(8) + .5]] + \
            [['impact', r.W(8, 4) + .15, .5, 70], ['whoosh', r.L(9) - .3, .9, .4], ['thud', r.L(9) + .4, .4], ['thud', r.L(9) + .7, .5], ['laser', r.L(10) - .3, .5], ['impact', r.L(10) + .1, .3, 50]]
-    save('09', page(r, body, js, heads_html, end_html, END), cues)
+    save('09', nosubs(page(r, body, js, heads_html, end_html, END)), cues)
     return END
 
 
@@ -362,7 +367,7 @@ if (show('end', t, L[7] - .05, 999)) {{ const l = prog(t, L[7], L[7] + .6); $('e
            [['thud', r.L(1) + 1.1 + h * .045 * 4, .3] for h in range(6)] + \
            [['whoosh', r.L(2), .7, .4], ['impact', r.W(2, 4) + .1, .4, 65], ['whoosh', r.L(3), .7, .4], ['pop', r.W(3, 4) + .1, .3, 800],
             ['whoosh', r.L(4) + .1, 1.1, .4], ['whoosh', r.L(6) - .3, .9, .4], ['pop', r.W(6, 1) + .1, .3, 600], ['laser', r.L(7) - .3, .5], ['impact', r.L(7) + .1, .3, 50]]
-    save('10', page(r, body, js, heads_html, end_html, END), cues)
+    save('10', nosubs(page(r, body, js, heads_html, end_html, END)), cues)
     return END
 
 
@@ -502,7 +507,7 @@ if (show('end', t, L[16] - .05, 999)) {{ const l = prog(t, L[16], L[16] + .6); $
         ['click', r.W(12, 2), .4], ['pop', r.W(12, 2) + .35, .3, 700],
         ['whoosh', r.L(13) - .3, 1.0, .5], ['thud', r.L(13) + .3, .4], ['whoosh', r.L(14) - .1, .8, .35], ['pop', r.L(14) + .2, .3, 650],
         ['whoosh', r.L(15) - .1, .8, .35], ['pop', r.L(15) + .2, .3, 800], ['laser', r.L(16) - .3, .5], ['impact', r.L(16) + .1, .3, 50]]
-    save('08', page(r, body, js, heads_html, end_html, END), cues)
+    save('08', nosubs(page(r, body, js, heads_html, end_html, END)), cues)
     return END
 
 for n in argv:

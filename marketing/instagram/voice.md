@@ -76,3 +76,10 @@ Real numbers only. Until there are users, demo numbers must be labelled as demo.
 - **My keyword CTA, if I use one:** TILT
 - **What the keyword sends them:** the link to tiltless.xyz
 - **Where my link goes:** https://tiltless.xyz
+
+## Video rules (from the owner's feedback)
+
+- One text layer per line, never two: if a scene heading already says what the voice says, there are
+  no word-by-word subtitles under it (the owner saw the same line twice in reel 08 on Nov 11). Either
+  short headings that don't repeat the voice plus subtitles, or full headings and no subtitles.
+- Slow enough to follow: a demo step gets its own line and a pause (reel 08 went from 34 s to 56 s).
