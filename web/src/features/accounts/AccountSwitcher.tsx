@@ -15,12 +15,18 @@ export function AccountSwitcher() {
 
   if (active.length === 0) return null
   if (active.length === 1) {
-    return <span className="account-pill account-pill--static">{active[0]!.name}</span>
+    return (
+      <span className="account-pill account-pill--static">
+        <span className="account-pill__dot" aria-hidden="true" />
+        {active[0]!.isDemo ? `${active[0]!.name} · ${t('accounts.demoTag')}` : active[0]!.name}
+      </span>
+    )
   }
 
   const value = selectedAccount === 'all' || accounts.some((account) => account.id === selectedAccount) ? selectedAccount : 'all'
   return (
     <label className="account-pill">
+      <span className="account-pill__dot" aria-hidden="true" />
       <span className="visually-hidden">{t('accounts.switcherLabel')}</span>
       <select value={value} onChange={(event) => updateSettings({ selectedAccount: event.target.value })}>
         <option value="all">{t('accounts.all')}</option>

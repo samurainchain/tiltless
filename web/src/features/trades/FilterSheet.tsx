@@ -141,6 +141,7 @@ export function ActiveFilters({ filter, onChange }: { filter: TradeFilter; onCha
   if (filter.result) labels.push({ key: 'result', label: t(filter.result === 'profit' ? 'filters.profit' : 'filters.loss') })
   if (filter.symbol) labels.push({ key: 'symbol', label: filter.symbol })
   if (filter.emotion) labels.push({ key: 'emotion', label: t(`emotion.${filter.emotion}`) })
+  if (filter.side) labels.push({ key: 'side', label: t(`side.${filter.side}`) })
   const mistake = mistakes.find((tag) => tag.id === filter.mistakeId)
   if (mistake) labels.push({ key: 'mistakeId', label: mistakeName(mistake) })
   const setup = setups.find((tag) => tag.id === filter.setupId)

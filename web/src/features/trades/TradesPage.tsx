@@ -1,12 +1,12 @@
-import { Calculator, ListChecks, Plus, SlidersHorizontal } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
-import { useJournal } from '../../app/journal'
+import { ChevronDown, ListChecks, Plus, Search, SlidersHorizontal } from 'lucide-react'
+import { useCallback, useId, useMemo, useState, type ReactNode } from 'react'
+import { useJournal, useMistakeName } from '../../app/journal'
 import { updateSettings, useSettings } from '../../app/settings'
 import { DEFAULT_SORT, pageOf, sortTrades, TRADES_PER_PAGE, type TradeSort } from '../../core/tradeTable'
 import { useSheets } from '../../app/sheets'
 import { Button, EmptyState, PnLText, Segmented } from '../../design/components'
 import { formatDay } from '../../i18n/format'
-import type { Trade } from '../../core/models'
+import { EMOTIONS, type Emotion, type Trade } from '../../core/models'
 import { useI18n } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
 import { ActiveFilters, FilterSheet } from './FilterSheet'
@@ -14,7 +14,7 @@ import { activeFilterCount, filterTrades, type TradeFilter } from './tradeFilter
 import { groupByDay, useVisibleTrades } from './tradeQueries'
 import { TradePanel } from './TradePanel'
 import { TradeRow } from './TradeRow'
-import { ColumnsMenu, TradeSummaryStrip, TradeTable } from './TradeTable'
+import { ColumnsMenu, TradeSummaryCards, TradeTable } from './TradeTable'
 
 type View = 'days' | 'table'
 
@@ -30,7 +30,7 @@ function defaultView(): View {
 export function TradesPage() {
   const { t, locale } = useI18n()
   const { trades, currency } = useVisibleTrades()
-  const { newTrade, openCalculator } = useSheets()
+  const { newTrade } = useSheets()
   const [filter, setFilter] = useState<TradeFilter>({})
   const [filtersOpen, setFiltersOpen] = useState(false)
   const count = activeFilterCount(filter)
@@ -45,35 +45,29 @@ export function TradesPage() {
         showAccountSwitcher
         trailing={
           trades.length > 0 && (
-            <Button icon={<SlidersHorizontal size={18} aria-hidden="true" />} aria-label={count ? t('filters.buttonActive', { count }) : undefined} onClick={() => setFiltersOpen(true)}>
-              {t('filters.button')}
-              {count > 0 && <span className="badge">{count}</span>}
-            </Button>
+            <>
+              <Segmented
+                label={t('trades.view')}
+                value={view}
+                onChange={(tradesView) => updateSettings({ tradesView })}
+                options={[
+                  { value: 'days', label: t('trades.view.days') },
+                  { value: 'table', label: t('trades.view.table') },
+                ]}
+              />
+              {/* Phones: the filters in a sheet; wide screens have the filter bar below. */}
+              <Button className="trades-filters-button" icon={<SlidersHorizontal size={18} aria-hidden="true" />} aria-label={count ? t('filters.buttonActive', { count }) : undefined} onClick={() => setFiltersOpen(true)}>
+                {t('filters.button')}
+                {count > 0 && <span className="badge">{count}</span>}
+              </Button>
+            </>
           )
         }
       />
       <ActiveFilters filter={filter} onChange={setFilter} />
       <FilterSheet open={filtersOpen} filter={filter} trades={trades} onChange={setFilter} onClose={() => setFiltersOpen(false)} />
-      {trades.length > 0 && (
-        <div className="trades-toolbar">
-          <Segmented
-            label={t('trades.view')}
-            value={view}
-            onChange={(tradesView) => updateSettings({ tradesView })}
-            options={[
-              { value: 'days', label: t('trades.view.days') },
-              { value: 'table', label: t('trades.view.table') },
-            ]}
-          />
-          <span className="trades-toolbar__actions">
-            <Button icon={<Calculator size={18} aria-hidden="true" />} onClick={openCalculator}>
-              {t('calc.button')}
-            </Button>
-            {view === 'table' && <ColumnsMenu />}
-          </span>
-        </div>
-      )}
-      {filtered.length > 0 && <TradeSummaryStrip trades={filtered} currency={currency} />}
+      {filtered.length > 0 && <TradeSummaryCards trades={filtered} currency={currency} period={filter.period ? t(`analytics.period.${filter.period}`) : undefined} />}
+      {trades.length > 0 && <FilterBar filter={filter} onChange={setFilter} columns={view === 'table'} />}
       {filtered.length === 0 && count > 0 ? (
         <EmptyState
           icon={<SlidersHorizontal size={28} />}
@@ -152,5 +146,94 @@ function TableView({ trades }: { trades: Trade[] }) {
       />
       <TradePanel trades={sorted} openId={openId} onOpen={open} onClose={close} />
     </>
+  )
+}
+
+/**
+ * The filter bar on wide screens: a search over symbols and notes, then the period, side, mistake
+ * and emotion as chips that open a menu, and the column picker on the right.
+ */
+function FilterBar({ filter, onChange, columns }: { filter: TradeFilter; onChange: (filter: TradeFilter) => void; columns: boolean }) {
+  const { t } = useI18n()
+  const { mistakes } = useJournal()
+  const mistakeName = useMistakeName()
+  const searchId = useId()
+  const set = (patch: Partial<TradeFilter>) => onChange({ ...filter, ...patch })
+  const active = mistakes.filter((tag) => !tag.isArchived)
+
+  const chip = (label: string, value: string, change: (value: string) => void, options: ReactNode, on: boolean) => (
+    <label className={on ? 'filter-chip filter-chip--on' : 'filter-chip'}>
+      <span className="visually-hidden">{label}</span>
+      <select value={value} onChange={(event) => change(event.target.value)}>
+        {options}
+      </select>
+      <ChevronDown size={14} aria-hidden="true" />
+    </label>
+  )
+
+  return (
+    <div className="filter-bar">
+      <div className="filter-bar__chips">
+        <label className="filter-search" htmlFor={searchId}>
+          <Search size={15} aria-hidden="true" />
+          <span className="visually-hidden">{t('filters.search')}</span>
+          <input id={searchId} type="search" placeholder={t('filters.search')} value={filter.query ?? ''} onChange={(event) => set({ query: event.target.value || undefined })} />
+        </label>
+        {chip(
+          t('filters.period'),
+          filter.period ?? '',
+          (value) => set({ period: (value || undefined) as TradeFilter['period'] }),
+          <>
+            <option value="">{t('filters.allTime')}</option>
+            {(['week', 'month', 'quarter'] as const).map((period) => (
+              <option key={period} value={period}>
+                {t('filters.last', { period: t(`analytics.period.${period}`) })}
+              </option>
+            ))}
+          </>,
+          Boolean(filter.period),
+        )}
+        {chip(
+          t('trades.column.side'),
+          filter.side ?? '',
+          (value) => set({ side: (value || undefined) as TradeFilter['side'] }),
+          <>
+            <option value="">{t('filters.sideChip', { value: t('filters.all') })}</option>
+            <option value="long">{t('filters.sideChip', { value: t('side.long') })}</option>
+            <option value="short">{t('filters.sideChip', { value: t('side.short') })}</option>
+          </>,
+          Boolean(filter.side),
+        )}
+        {chip(
+          t('trades.column.tags'),
+          filter.mistakeId ?? '',
+          (value) => set({ mistakeId: value || undefined }),
+          <>
+            <option value="">{t('filters.tagsChip', { value: t('filters.all') })}</option>
+            {active.map((tag) => (
+              <option key={tag.id} value={tag.id}>
+                {t('filters.tagsChip', { value: mistakeName(tag) })}
+              </option>
+            ))}
+          </>,
+          Boolean(filter.mistakeId),
+        )}
+        {chip(
+          t('trades.column.emotion'),
+          filter.emotion ?? '',
+          (value) => set({ emotion: (value || undefined) as Emotion | undefined }),
+          <>
+            <option value="">{t('filters.emotionChip', { value: t('filters.all') })}</option>
+            {EMOTIONS.map((emotion) => (
+              <option key={emotion} value={emotion}>
+                {t('filters.emotionChip', { value: t(`emotion.${emotion}`) })}
+              </option>
+            ))}
+          </>,
+          Boolean(filter.emotion),
+        )}
+      </div>
+      {columns && <ColumnsMenu />}
+    </div>
   )
 }

@@ -5,12 +5,12 @@ import { rMultiple, tradeDuration, tradePnl } from './pnl'
 // The trade table on wide screens (SPEC section 4.5): which columns it shows, how it sorts and
 // how it pages. Pure functions; the trader's column choice lives in the browser's settings.
 
-export const TRADE_COLUMNS = ['side', 'account', 'entryPrice', 'exitPrice', 'openedAt', 'closedAt', 'duration', 'quantity', 'pnl', 'r', 'tags', 'emotion', 'rating'] as const
+export const TRADE_COLUMNS = ['side', 'account', 'entryPrice', 'exitPrice', 'openedAt', 'duration', 'quantity', 'pnl', 'r', 'tags', 'emotion', 'rating'] as const
 export type TradeColumn = (typeof TRADE_COLUMNS)[number]
-/** The symbol always shows, so it's a sort key but not a column you can hide. */
-export type SortKey = TradeColumn | 'symbol'
+/** The date (exit time) and the symbol always show, so they're sort keys but not columns you can hide. */
+export type SortKey = TradeColumn | 'symbol' | 'closedAt'
 
-export const DEFAULT_HIDDEN_COLUMNS: readonly TradeColumn[] = ['account', 'openedAt', 'duration']
+export const DEFAULT_HIDDEN_COLUMNS: readonly TradeColumn[] = ['account', 'openedAt', 'duration', 'r', 'rating']
 export const TRADES_PER_PAGE = 25
 
 export interface TradeSort {
@@ -91,6 +91,12 @@ export function sortTrades(trades: readonly Trade[], sort: TradeSort, accountNam
       return sign * compare(a.value, b.value) || newest(a.trade, b.trade)
     })
     .map((item) => item.trade)
+}
+
+/** The traded coin of a crypto pair (BTC for BTCUSDT), to name the size's unit; nothing for other symbols. */
+export function baseAsset(symbol: string): string | undefined {
+  const match = /^([A-Z0-9]{2,10}?)[-/]?(USDT|USDC|BUSD|FDUSD|USD)(-?SWAP|PERP)?$/.exec(symbol.toUpperCase())
+  return match?.[1]
 }
 
 /** Sorted by time, the table reads like the journal: rows grouped under their day. */

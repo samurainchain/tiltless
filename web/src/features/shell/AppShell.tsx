@@ -20,6 +20,8 @@ import { TodayPage } from '../today/TodayPage'
 import { TradeDetailPage } from '../trades/TradeDetailPage'
 import { TradesPage } from '../trades/TradesPage'
 import { AppBar } from './AppBar'
+import { useCloud } from '../../app/cloud'
+import { useAccess } from '../../app/entitlement'
 
 // Heavier screens load when first opened, keeping the first download small; the service worker
 // still caches them for offline use.
@@ -97,6 +99,7 @@ export function AppShell() {
         </div>
         {addButton}
         {TABS.map(tabLink)}
+        <SidebarJournal />
       </nav>
 
       <main className="content">
@@ -158,4 +161,24 @@ function Page({ route }: { route: Route }) {
 function useThemeAttribute() {
   const { theme, style, accent } = useSettings()
   useEffect(() => applyAppearance({ theme, style, accent }), [theme, style, accent])
+}
+
+/** The sidebar's foot: whose journal this is (the signed-in email, or this browser) and the plan. */
+function SidebarJournal() {
+  const { t } = useI18n()
+  const { state } = useCloud()
+  const access = useAccess()
+  const name = state.email || t('sidebar.localJournal')
+  const plan = access.pro ? t(access.source === 'trial' ? 'sidebar.planTrial' : 'sidebar.planPro') : access.gated ? t('sidebar.planFree') : undefined
+  return (
+    <a className="sidebar__journal" href={routeHref({ name: 'profile' })}>
+      <span className="sidebar__avatar" aria-hidden="true">
+        {(state.email || 'T').charAt(0).toUpperCase()}
+      </span>
+      <span className="sidebar__journal-text">
+        <span className="sidebar__journal-name">{name}</span>
+        {plan && <span className="caption">{plan}</span>}
+      </span>
+    </a>
+  )
 }

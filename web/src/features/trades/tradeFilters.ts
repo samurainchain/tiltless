@@ -9,6 +9,9 @@ export interface TradeFilter {
   symbol?: string
   result?: 'profit' | 'loss'
   emotion?: Emotion
+  side?: 'long' | 'short'
+  /** Text searched in the symbol and the note. */
+  query?: string
   mistakeId?: string
   setupId?: string
   /** Stars 1–5, or trades not rated yet. */
@@ -16,7 +19,7 @@ export interface TradeFilter {
 }
 
 export function activeFilterCount(filter: TradeFilter): number {
-  return Object.values(filter).filter((value) => value !== undefined).length
+  return Object.entries(filter).filter(([key, value]) => value !== undefined && !(key === 'query' && !String(value).trim())).length
 }
 
 export function filterTrades(trades: readonly Trade[], filter: TradeFilter, now: Date): Trade[] {
@@ -25,6 +28,11 @@ export function filterTrades(trades: readonly Trade[], filter: TradeFilter, now:
     if (since && new Date(trade.closedAt ?? trade.openedAt) < since) return false
     if (filter.symbol && trade.symbol !== filter.symbol) return false
     if (filter.emotion && trade.emotion !== filter.emotion) return false
+    if (filter.side && trade.side !== filter.side) return false
+    if (filter.query?.trim()) {
+      const query = filter.query.trim().toLowerCase()
+      if (!trade.symbol.toLowerCase().includes(query) && !(trade.note ?? '').toLowerCase().includes(query)) return false
+    }
     if (filter.mistakeId && !trade.mistakeIds.includes(filter.mistakeId)) return false
     if (filter.setupId && !trade.setupIds.includes(filter.setupId)) return false
     if (filter.rating !== undefined && (validRating(trade.rating) ?? 'none') !== filter.rating) return false

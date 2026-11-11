@@ -99,6 +99,45 @@
     background: var(--color-surface);
   }
 
+  .sidebar__journal {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    margin-top: auto;
+    padding: var(--space-s);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+
+  .sidebar__avatar {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-surface-elevated);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .sidebar__journal-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .sidebar__journal-name {
+    overflow: hidden;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .sidebar__brand {
     display: flex;
     align-items: center;
@@ -232,6 +271,46 @@
 
 .account-pill--static {
   color: var(--color-text-secondary);
+}
+
+.account-pill__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+
+.app-bar__extras {
+  display: contents;
+}
+
+/* The top bar on wide screens: the account as a round pill and the bell, nothing else. */
+@media (min-width: 900px) {
+  .app-bar__extras {
+    display: none;
+  }
+
+  .app-bar .account-pill {
+    gap: var(--space-xs);
+    min-height: 36px;
+    padding: 0 var(--space-m);
+    border-color: var(--color-border-strong);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+    color: var(--color-text-primary);
+    font-size: var(--text-caption);
+  }
+
+  .app-bar .app-bar__button {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 50%;
+  }
 }
 
 /* Lists */

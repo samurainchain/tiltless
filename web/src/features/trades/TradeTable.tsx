@@ -6,35 +6,39 @@ import type { Currency, Trade } from '../../core/models'
 import { rMultiple, totalPnl, tradeDuration, tradePnl } from '../../core/pnl'
 import { closedTrades, metrics } from '../../core/stats'
 import { tradeTotals } from '../../core/tradeStats'
-import { groupsByDay, nextSort, normalizeHiddenColumns, pageCount, pageOf, toggleColumn, TRADE_COLUMNS, type SortKey, type TradeColumn, type TradeSort } from '../../core/tradeTable'
+import { baseAsset, groupsByDay, nextSort, normalizeHiddenColumns, pageCount, pageOf, toggleColumn, TRADE_COLUMNS, type SortKey, type TradeColumn, type TradeSort } from '../../core/tradeTable'
 import { PnLText } from '../../design/components'
-import { formatDate, formatDay, formatDecimal, formatDuration, formatR, formatRatio, formatShare, formatTime } from '../../i18n/format'
+import { formatDate, formatDecimal, formatDuration, formatR, formatRatio, formatShare, formatTime, intlLocale } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { StarRating } from './StarRating'
-import { EMOTION_ICONS } from './TradeRow'
 import { dayFromKey, tradeDayKey } from './tradeQueries'
 
-/** Net PnL, win rate, profit factor, average hold, count and expectancy of the trades shown. */
-export function TradeSummaryStrip({ trades, currency }: { trades: readonly Trade[]; currency: Currency }) {
+/** Columns of words, not numbers: they keep the text face. */
+const TEXT_COLUMNS: readonly TradeColumn[] = ['side', 'account', 'tags', 'emotion', 'rating']
+
+/**
+ * The totals of the trades shown, as five cards: net PnL (with the period when one is picked), win
+ * rate, count, profit factor and average hold.
+ */
+export function TradeSummaryCards({ trades, currency, period }: { trades: readonly Trade[]; currency: Currency; period?: string }) {
   const { t, locale } = useI18n()
   const closed = useMemo(() => closedTrades(trades), [trades])
   const summary = useMemo(() => metrics(closed), [closed])
   const { averageHoldMs } = useMemo(() => tradeTotals(closed), [closed])
   if (closed.length === 0) return null
 
-  const stats: [string, ReactNode][] = [
-    [t('trade.netPnl'), <PnLText amount={summary.pnl} currency={currency} />],
+  const stats: [string, ReactNode, string?][] = [
+    [period ? `${t('trade.netPnl')} · ${period}` : t('trade.netPnl'), <PnLText amount={summary.pnl} currency={currency} />, 'trade-cards__item--lead'],
     [t('analytics.metric.winRate'), summary.winRate ? formatShare(summary.winRate, locale) : '—'],
+    [t('dashboard.tradeCount'), String(summary.count)],
     [t('analytics.metric.profitFactor'), summary.profitFactor ? formatRatio(summary.profitFactor, locale) : summary.grossProfit.gt(0) ? '∞' : '—'],
     [t('dashboard.avgHold'), averageHoldMs !== undefined ? formatDuration(averageHoldMs, locale) : '—'],
-    [t('dashboard.tradeCount'), String(summary.count)],
-    [t('analytics.metric.expectancy'), summary.expectancy ? <PnLText amount={summary.expectancy} currency={currency} /> : '—'],
   ]
   return (
-    <section className="trade-strip card" aria-label={t('trades.summary')}>
-      <dl className="trade-strip__list">
-        {stats.map(([label, value]) => (
-          <div key={label} className="trade-strip__item">
+    <section className="trade-cards" aria-label={t('trades.summary')}>
+      <dl className="trade-cards__list">
+        {stats.map(([label, value, className]) => (
+          <div key={label} className={`card trade-cards__item${className ? ` ${className}` : ''}`}>
             <dt className="label">{label}</dt>
             <dd className="numeric">{value}</dd>
           </div>
@@ -68,8 +72,9 @@ export function ColumnsMenu() {
 }
 
 /**
- * Trades as a sortable table, a page at a time (SPEC section 4.5). A row opens the trade in the
- * side panel; the star rating is set right in its cell.
+ * Trades as a sortable table, a page at a time (SPEC section 4.5): the date and symbol first, then
+ * the columns the trader keeps; sorted by time, rows sit under their day with its total. A row
+ * opens the trade in the side panel; the star rating is set right in its cell.
  */
 export function TradeTable({
   trades,
@@ -94,17 +99,18 @@ export function TradeTable({
   const hidden = normalizeHiddenColumns(useSettings().hiddenTradeColumns)
   const columns = TRADE_COLUMNS.filter((column) => !hidden.includes(column))
   const shown = pageOf(trades, page)
-  const grouped = groupsByDay(sort)
   const pages = pageCount(trades.length)
+  const grouped = groupsByDay(sort)
   const accountOf = (trade: Trade) => accounts.find((item) => item.id === trade.accountId)
+  const dayTitle = new Intl.DateTimeFormat(intlLocale(locale), { weekday: 'short', month: 'short', day: 'numeric' })
 
-  const header = (key: SortKey) => {
+  const header = (key: SortKey, label = t(`trades.column.${key}`)) => {
     const active = sort.key === key
     const Arrow = sort.direction === 'asc' ? ArrowUp : ArrowDown
     return (
       <th key={key} scope="col" aria-sort={active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined} className={`trade-table__${key}`}>
         <button type="button" className="trade-table__sort" onClick={() => onSort(nextSort(sort, key))}>
-          {t(`trades.column.${key}`)}
+          {label}
           {active && <Arrow size={14} aria-hidden="true" />}
         </button>
       </th>
@@ -125,7 +131,12 @@ export function TradeTable({
     const currency = accountOf(trade)?.currency ?? 'USD'
     switch (column) {
       case 'side':
-        return <span className={`side-badge side-badge--${trade.side}`}>{t(`side.${trade.side}`)}</span>
+        return (
+          <span className="trade-table__side-text">
+            {t(`side.${trade.side}`)}
+            {trade.leverage && ` ${formatDecimal(trade.leverage, locale)}×`}
+          </span>
+        )
       case 'account':
         return accountOf(trade)?.name ?? '—'
       case 'entryPrice':
@@ -134,15 +145,14 @@ export function TradeTable({
         return trade.exitPrice ? formatDecimal(trade.exitPrice, locale) : '—'
       case 'openedAt':
         return when(trade.openedAt)
-      case 'closedAt':
-        // Under its day's heading the time is enough.
-        return grouped && trade.closedAt ? formatTime(trade.closedAt, locale) : when(trade.closedAt)
       case 'duration': {
         const duration = tradeDuration(trade)
         return duration === undefined ? '—' : formatDuration(duration, locale)
       }
-      case 'quantity':
-        return formatDecimal(trade.quantity, locale)
+      case 'quantity': {
+        const unit = baseAsset(trade.symbol)
+        return unit ? `${formatDecimal(trade.quantity, locale)} ${unit}` : formatDecimal(trade.quantity, locale)
+      }
       case 'pnl': {
         const pnl = tradePnl(trade)
         return pnl ? <PnLText amount={pnl} currency={currency} /> : <span className="caption">{t('trade.open')}</span>
@@ -163,16 +173,8 @@ export function TradeTable({
           </span>
         )
       }
-      case 'emotion': {
-        if (!trade.emotion) return null
-        const Icon = EMOTION_ICONS[trade.emotion]
-        return (
-          <span className="emotion-label">
-            <Icon size={15} aria-hidden="true" />
-            {t(`emotion.${trade.emotion}`)}
-          </span>
-        )
-      }
+      case 'emotion':
+        return trade.emotion ? t(`emotion.${trade.emotion}`) : null
       case 'rating':
         return <StarRating trade={trade} />
     }
@@ -184,8 +186,8 @@ export function TradeTable({
     const total = totalPnl(trades.filter((trade) => tradeDayKey(trade) === key))
     return (
       <tr key={`day-${key}`} className="trade-table__day">
-        <th scope="rowgroup" colSpan={columns.length}>
-          {formatDay(dayFromKey(key), locale)}
+        <th scope="rowgroup" colSpan={columns.length + 1}>
+          {dayTitle.format(dayFromKey(key))}
         </th>
         <td className="numeric">
           <span className="visually-hidden">{t('trades.dayTotal')} </span>
@@ -201,14 +203,16 @@ export function TradeTable({
         <table className="trade-table__table">
           <thead>
             <tr>
+              {header('closedAt', t('trades.column.date'))}
               {header('symbol')}
-              {columns.map(header)}
+              {columns.map((column) => header(column))}
             </tr>
           </thead>
           <tbody>
             {shown.items.map((trade, index) => [
               grouped && (index === 0 || tradeDayKey(shown.items[index - 1]!) !== tradeDayKey(trade)) ? dayRow(tradeDayKey(trade), trade) : null,
               <tr key={trade.id} className={trade.id === openId ? 'trade-table__row trade-table__row--open' : 'trade-table__row'} onClick={() => onOpen(trade.id)}>
+                <td className="trade-table__closedAt numeric">{grouped ? formatTime(trade.closedAt ?? trade.openedAt, locale) : when(trade.closedAt ?? trade.openedAt)}</td>
                 <th scope="row" className="trade-table__symbol">
                   <button
                     type="button"
@@ -223,7 +227,7 @@ export function TradeTable({
                   </button>
                 </th>
                 {columns.map((column) => (
-                  <td key={column} className={`trade-table__${column} numeric`} onClick={column === 'rating' ? (event) => event.stopPropagation() : undefined}>
+                  <td key={column} className={`trade-table__${column}${TEXT_COLUMNS.includes(column) ? '' : ' numeric'}`} onClick={column === 'rating' ? (event) => event.stopPropagation() : undefined}>
                     {cell(trade, column)}
                   </td>
                 ))}
@@ -232,18 +236,20 @@ export function TradeTable({
           </tbody>
         </table>
       </div>
-      <nav className="trade-table__pages" aria-label={t('trades.pageOf', { page: String(shown.page + 1), count: String(pages) })}>
-        <span className="caption numeric">{t('trades.range', { first: String(shown.first), last: String(shown.last), total: String(trades.length) })}</span>
-        <span className="trade-table__page-buttons">
-          <button type="button" className="icon-button" aria-label={t('trades.previousPage')} disabled={shown.page === 0} onClick={() => onPage(shown.page - 1)}>
-            <ChevronLeft size={18} aria-hidden="true" />
-          </button>
-          <span className="caption numeric">{t('trades.pageOf', { page: String(shown.page + 1), count: String(pages) })}</span>
-          <button type="button" className="icon-button" aria-label={t('trades.nextPage')} disabled={shown.page >= pages - 1} onClick={() => onPage(shown.page + 1)}>
-            <ChevronRight size={18} aria-hidden="true" />
-          </button>
-        </span>
-      </nav>
+      {pages > 1 && (
+        <nav className="trade-table__pages" aria-label={t('trades.pageOf', { page: String(shown.page + 1), count: String(pages) })}>
+          <span className="caption numeric">{t('trades.range', { first: String(shown.first), last: String(shown.last), total: String(trades.length) })}</span>
+          <span className="trade-table__page-buttons">
+            <button type="button" className="icon-button" aria-label={t('trades.previousPage')} disabled={shown.page === 0} onClick={() => onPage(shown.page - 1)}>
+              <ChevronLeft size={18} aria-hidden="true" />
+            </button>
+            <span className="caption numeric">{t('trades.pageOf', { page: String(shown.page + 1), count: String(pages) })}</span>
+            <button type="button" className="icon-button" aria-label={t('trades.nextPage')} disabled={shown.page >= pages - 1} onClick={() => onPage(shown.page + 1)}>
+              <ChevronRight size={18} aria-hidden="true" />
+            </button>
+          </span>
+        </nav>
+      )}
     </div>
   )
 }

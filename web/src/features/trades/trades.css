@@ -840,3 +840,190 @@ a.button {
   justify-content: space-between;
   gap: var(--space-s);
 }
+
+
+/* Totals as five cards, big mono numbers (the desktop mockup). */
+.trade-cards {
+  margin: var(--space-m) 0;
+}
+
+.trade-cards__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: var(--space-s);
+  margin: 0;
+}
+
+.trade-cards .trade-cards__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: var(--space-s) var(--space-m);
+}
+
+.trade-cards__item dd {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 900px) {
+  .trade-cards__list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-m);
+  }
+
+  .trade-cards .trade-cards__item {
+    padding: var(--space-m) var(--space-l);
+  }
+
+  .trade-cards__item dd {
+    font-size: 1.75rem;
+  }
+}
+
+/* Filter bar (wide screens): a search and chips that open a menu, the columns on the right. */
+.filter-bar {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-s);
+    margin-bottom: var(--space-m);
+  }
+
+  .trades-filters-button,
+  .active-filters {
+    display: none;
+  }
+}
+
+.filter-bar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.filter-search,
+.filter-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  height: 38px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+}
+
+.filter-search {
+  width: 15rem;
+  padding: 0 var(--space-s);
+}
+
+.filter-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  outline: none;
+}
+
+.filter-chip select {
+  height: 100%;
+  padding: 0 calc(var(--space-s) + 18px) 0 var(--space-s);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-weight: 500;
+  appearance: none;
+  cursor: pointer;
+}
+
+.filter-chip svg {
+  position: absolute;
+  right: var(--space-s);
+  pointer-events: none;
+}
+
+.filter-chip--on {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+.filter-chip:focus-within,
+.filter-search:focus-within {
+  border-color: var(--color-accent);
+}
+
+.filter-bar .columns-menu > summary {
+  height: 38px;
+  border-radius: 999px;
+}
+
+/* The table, roomier: taller rows, the side as text, the date and emotion in muted text. */
+.trade-table__table {
+  font-size: var(--text-body);
+}
+
+.trade-table__table td,
+.trade-table__table tbody th {
+  padding: var(--space-s) var(--space-m);
+}
+
+.trade-table__table thead th {
+  padding: var(--space-xs) var(--space-m);
+}
+
+.trade-table__table .trade-table__closedAt,
+.trade-table__table .trade-table__emotion {
+  text-align: left;
+  color: var(--color-text-secondary);
+}
+
+.trade-table__table td.trade-table__closedAt {
+  font-family: var(--font-mono);
+}
+
+.trade-table__table .trade-table__symbol {
+  font-weight: 600;
+}
+
+.trade-table__side-text {
+  font-family: var(--font-body);
+  color: var(--color-text-secondary);
+}
+
+.trade-table__table td:last-child,
+.trade-table__table th:last-child {
+  padding-right: var(--space-l);
+}
+
+.trade-table__table .flag-tag {
+  padding: 3px var(--space-s);
+  font-size: var(--text-caption);
+}
+
+/* The view switch sits in the page header, in one row. */
+.page-header__trailing .segmented {
+  display: inline-flex;
+  width: auto;
+}
+
+.page-header__trailing .segmented__option {
+  min-width: 4.5rem;
+  white-space: nowrap;
+}

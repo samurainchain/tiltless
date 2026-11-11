@@ -70,6 +70,8 @@ export function AppBar() {
           <AccountSwitcher />
         </div>
       )}
+      {/* Phones keep language, look and feedback here; wide screens have them in Profile. */}
+      <div className="app-bar__extras">
       <Popover label={t('profile.language')} trigger={<span className="app-bar__code">{locale.toUpperCase()}</span>}>
         {(close) => (
           <div role="radiogroup" aria-label={t('profile.language')} className="popover__options">
@@ -112,6 +114,7 @@ export function AppBar() {
           )}
         </Popover>
       )}
+      </div>
       <NoticeBell />
     </div>
   )
