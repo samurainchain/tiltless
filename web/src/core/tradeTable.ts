@@ -5,12 +5,12 @@ import { rMultiple, tradeDuration, tradePnl } from './pnl'
 // The trade table on wide screens (SPEC section 4.5): which columns it shows, how it sorts and
 // how it pages. Pure functions; the trader's column choice lives in the browser's settings.
 
-export const TRADE_COLUMNS = ['side', 'account', 'entryPrice', 'exitPrice', 'openedAt', 'closedAt', 'duration', 'quantity', 'pnl', 'r', 'rating'] as const
+export const TRADE_COLUMNS = ['side', 'account', 'entryPrice', 'exitPrice', 'openedAt', 'closedAt', 'duration', 'quantity', 'pnl', 'r', 'tags', 'emotion', 'rating'] as const
 export type TradeColumn = (typeof TRADE_COLUMNS)[number]
 /** The symbol always shows, so it's a sort key but not a column you can hide. */
 export type SortKey = TradeColumn | 'symbol'
 
-export const DEFAULT_HIDDEN_COLUMNS: readonly TradeColumn[] = ['account', 'duration']
+export const DEFAULT_HIDDEN_COLUMNS: readonly TradeColumn[] = ['account', 'openedAt', 'duration']
 export const TRADES_PER_PAGE = 25
 
 export interface TradeSort {
@@ -62,6 +62,10 @@ function sortValue(trade: Trade, key: SortKey, accountName: (id: string) => stri
       return tradePnl(trade)
     case 'r':
       return rMultiple(trade)
+    case 'tags':
+      return trade.mistakeIds.length || undefined
+    case 'emotion':
+      return trade.emotion
     case 'rating':
       return validRating(trade.rating)
   }
@@ -89,10 +93,15 @@ export function sortTrades(trades: readonly Trade[], sort: TradeSort, accountNam
     .map((item) => item.trade)
 }
 
+/** Sorted by time, the table reads like the journal: rows grouped under their day. */
+export function groupsByDay(sort: TradeSort): boolean {
+  return sort.key === 'closedAt' || sort.key === 'openedAt'
+}
+
 /** Clicking the sorted column flips it; another column starts descending (biggest, newest first), text ascending. */
 export function nextSort(current: TradeSort, key: SortKey): TradeSort {
   if (current.key === key) return { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
-  return { key, direction: key === 'symbol' || key === 'side' || key === 'account' ? 'asc' : 'desc' }
+  return { key, direction: key === 'symbol' || key === 'side' || key === 'account' || key === 'emotion' ? 'asc' : 'desc' }
 }
 
 export function pageCount(total: number, perPage = TRADES_PER_PAGE): number {

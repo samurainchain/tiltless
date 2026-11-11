@@ -1,16 +1,18 @@
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Columns3 } from 'lucide-react'
 import { useMemo, type ReactNode } from 'react'
-import { useJournal } from '../../app/journal'
+import { useJournal, useMistakeName } from '../../app/journal'
 import { updateSettings, useSettings } from '../../app/settings'
 import type { Currency, Trade } from '../../core/models'
-import { rMultiple, tradeDuration, tradePnl } from '../../core/pnl'
+import { rMultiple, totalPnl, tradeDuration, tradePnl } from '../../core/pnl'
 import { closedTrades, metrics } from '../../core/stats'
 import { tradeTotals } from '../../core/tradeStats'
-import { nextSort, normalizeHiddenColumns, pageCount, pageOf, toggleColumn, TRADE_COLUMNS, type SortKey, type TradeColumn, type TradeSort } from '../../core/tradeTable'
+import { groupsByDay, nextSort, normalizeHiddenColumns, pageCount, pageOf, toggleColumn, TRADE_COLUMNS, type SortKey, type TradeColumn, type TradeSort } from '../../core/tradeTable'
 import { PnLText } from '../../design/components'
-import { formatDate, formatDecimal, formatDuration, formatR, formatRatio, formatShare, formatTime } from '../../i18n/format'
+import { formatDate, formatDay, formatDecimal, formatDuration, formatR, formatRatio, formatShare, formatTime } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { StarRating } from './StarRating'
+import { EMOTION_ICONS } from './TradeRow'
+import { dayFromKey, tradeDayKey } from './tradeQueries'
 
 /** Net PnL, win rate, profit factor, average hold, count and expectancy of the trades shown. */
 export function TradeSummaryStrip({ trades, currency }: { trades: readonly Trade[]; currency: Currency }) {
@@ -87,10 +89,12 @@ export function TradeTable({
   onOpen: (id: string) => void
 }) {
   const { t, locale } = useI18n()
-  const { accounts } = useJournal()
+  const { accounts, mistakes } = useJournal()
+  const mistakeName = useMistakeName()
   const hidden = normalizeHiddenColumns(useSettings().hiddenTradeColumns)
   const columns = TRADE_COLUMNS.filter((column) => !hidden.includes(column))
   const shown = pageOf(trades, page)
+  const grouped = groupsByDay(sort)
   const pages = pageCount(trades.length)
   const accountOf = (trade: Trade) => accounts.find((item) => item.id === trade.accountId)
 
@@ -131,7 +135,8 @@ export function TradeTable({
       case 'openedAt':
         return when(trade.openedAt)
       case 'closedAt':
-        return when(trade.closedAt)
+        // Under its day's heading the time is enough.
+        return grouped && trade.closedAt ? formatTime(trade.closedAt, locale) : when(trade.closedAt)
       case 'duration': {
         const duration = tradeDuration(trade)
         return duration === undefined ? '—' : formatDuration(duration, locale)
@@ -146,9 +151,48 @@ export function TradeTable({
         const r = rMultiple(trade)
         return r ? formatR(r, locale) : '—'
       }
+      case 'tags': {
+        const tags = mistakes.filter((tag) => trade.mistakeIds.includes(tag.id))
+        return tags.length === 0 ? null : (
+          <span className="trade-table__flags">
+            {tags.map((tag) => (
+              <span key={tag.id} className="flag-tag">
+                {mistakeName(tag)}
+              </span>
+            ))}
+          </span>
+        )
+      }
+      case 'emotion': {
+        if (!trade.emotion) return null
+        const Icon = EMOTION_ICONS[trade.emotion]
+        return (
+          <span className="emotion-label">
+            <Icon size={15} aria-hidden="true" />
+            {t(`emotion.${trade.emotion}`)}
+          </span>
+        )
+      }
       case 'rating':
         return <StarRating trade={trade} />
     }
+  }
+
+  // A heading row with the day's total before each day's first trade, when sorted by time.
+  const dayRow = (key: string, first: Trade) => {
+    const currency = accountOf(first)?.currency ?? 'USD'
+    const total = totalPnl(trades.filter((trade) => tradeDayKey(trade) === key))
+    return (
+      <tr key={`day-${key}`} className="trade-table__day">
+        <th scope="rowgroup" colSpan={columns.length}>
+          {formatDay(dayFromKey(key), locale)}
+        </th>
+        <td className="numeric">
+          <span className="visually-hidden">{t('trades.dayTotal')} </span>
+          <PnLText amount={total} currency={currency} />
+        </td>
+      </tr>
+    )
   }
 
   return (
@@ -162,7 +206,8 @@ export function TradeTable({
             </tr>
           </thead>
           <tbody>
-            {shown.items.map((trade) => (
+            {shown.items.map((trade, index) => [
+              grouped && (index === 0 || tradeDayKey(shown.items[index - 1]!) !== tradeDayKey(trade)) ? dayRow(tradeDayKey(trade), trade) : null,
               <tr key={trade.id} className={trade.id === openId ? 'trade-table__row trade-table__row--open' : 'trade-table__row'} onClick={() => onOpen(trade.id)}>
                 <th scope="row" className="trade-table__symbol">
                   <button
@@ -182,8 +227,8 @@ export function TradeTable({
                     {cell(trade, column)}
                   </td>
                 ))}
-              </tr>
-            ))}
+              </tr>,
+            ])}
           </tbody>
         </table>
       </div>

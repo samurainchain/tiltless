@@ -1,7 +1,7 @@
 import Big from 'big.js'
 import { describe, expect, it } from 'vitest'
 import type { Trade } from './models'
-import { DEFAULT_HIDDEN_COLUMNS, DEFAULT_SORT, nextSort, normalizeHiddenColumns, pageCount, pageOf, sortTrades, toggleColumn, validRating } from './tradeTable'
+import { DEFAULT_HIDDEN_COLUMNS, DEFAULT_SORT, groupsByDay, nextSort, normalizeHiddenColumns, pageCount, pageOf, sortTrades, toggleColumn, validRating } from './tradeTable'
 
 let sequence = 0
 
@@ -104,5 +104,13 @@ describe('pageOf', () => {
   it('clamps a page past the end, e.g. after filtering', () => {
     expect(pageOf(items.slice(0, 5), 3, 10)).toMatchObject({ page: 0, first: 1, last: 5 })
     expect(pageOf([], 2, 10)).toMatchObject({ page: 0, first: 0, last: 0 })
+  })
+})
+
+describe('groupsByDay', () => {
+  it('groups rows under their day only when the table is sorted by time', () => {
+    expect(groupsByDay(DEFAULT_SORT)).toBe(true)
+    expect(groupsByDay({ key: 'openedAt', direction: 'asc' })).toBe(true)
+    expect(groupsByDay({ key: 'pnl', direction: 'desc' })).toBe(false)
   })
 })
